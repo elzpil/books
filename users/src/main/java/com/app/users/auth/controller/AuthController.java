@@ -44,7 +44,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("message", "Invalid credentials"));
         }
 
-        String token = jwtTokenUtil.generateToken(existingUser.getEmail(), existingUser.getId());
+        String token = jwtTokenUtil.generateToken(existingUser.getEmail(), existingUser.getId(), existingUser.getRole());
         return ResponseEntity.ok(Map.of("token", token));
     }
 
@@ -64,8 +64,9 @@ public class AuthController {
 
         String username = jwtTokenUtil.extractUsername(token);
         Long userId = jwtTokenUtil.extractUserId(token);
+        String role = jwtTokenUtil.extractRole(token);
 
-        String newToken = jwtTokenUtil.generateToken(username, userId);
+        String newToken = jwtTokenUtil.generateToken(username, userId, role);
         return ResponseEntity.ok(Map.of("token", newToken));
     }
 }

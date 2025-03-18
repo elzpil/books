@@ -1,8 +1,6 @@
 package com.app.community.auth.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -15,14 +13,15 @@ public class JwtTokenUtil {
     private final String secretKey = "laksjduthgpqeerrnnjj123456789011laksjduthgp";  // Move this to application properties in production
     private final long expirationTime = 86400000;    // 24 hours in milliseconds
 
-    public String generateToken(String username, Long userId) {
+    public String generateToken(String username, Long userId, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
-        claims.put("username", username);  // Store username as a claim
+        claims.put("username", username);
+        claims.put("role", role);
 
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(username)  // Subject can be username (optional)
+                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(SignatureAlgorithm.HS256, secretKey)
@@ -42,6 +41,9 @@ public class JwtTokenUtil {
 
     public Long extractUserId(String token) {
         return extractClaims(token).get("userId", Long.class);
+    }
+    public String extractRole(String token) {
+        return extractClaims(token).get("role", String.class);
     }
 
     public boolean isTokenExpired(String token) {

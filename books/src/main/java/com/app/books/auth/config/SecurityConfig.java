@@ -23,7 +23,6 @@ public class SecurityConfig {
 
     private final JwtTokenUtil jwtTokenUtil;
 
-    // Constructor injection of JwtTokenUtil
     public SecurityConfig(JwtTokenUtil jwtTokenUtil) {
         this.jwtTokenUtil = jwtTokenUtil;
     }

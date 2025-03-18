@@ -50,6 +50,8 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/users/create").permitAll()
                         .requestMatchers("/users/exists/*").permitAll()
+                        .requestMatchers("/users/{userId}").permitAll()
+                        .requestMatchers("/users/{userId}/role").hasRole("ADMIN")
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
