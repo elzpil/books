@@ -1,13 +1,14 @@
-package com.app.users.auth.controller;/*
-package com.app.books.auth.controller;
+package com.app.users.auth.controller;
 
-import com.app.books.auth.util.JwtTokenUtil;
-import com.app.books.model.User;
-import com.app.books.business.service.UserService;
+import com.app.users.auth.util.JwtTokenUtil;
+import com.app.users.model.User;
+import com.app.users.business.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class AuthController {
     private UserService userService;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
 
     @PostMapping("/register")
@@ -68,4 +69,4 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("token", newToken));
     }
 }
-*/
+

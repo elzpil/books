@@ -1,7 +1,6 @@
-package com.app.users.auth.config;/*
+package com.app.users.auth.config;
 
-package com.app.books.auth.config;
-
+import com.app.users.auth.service.CustomUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,7 +38,8 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())  // Disable CSRF for simplicity
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()  // Allow public access to auth endpoints
+                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/users/create").permitAll()// Allow public access to auth endpoints
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .logout(logout -> logout
@@ -48,6 +48,9 @@ public class SecurityConfig {
                 );
         return http.build();
     }
-}
 
-*/
+    @Bean
+    public UserDetailsService userDetailsService(CustomUserDetailsService customUserDetailsService) {
+        return customUserDetailsService;
+    }
+}

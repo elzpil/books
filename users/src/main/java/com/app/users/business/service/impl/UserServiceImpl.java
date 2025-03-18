@@ -99,12 +99,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username);
+        Optional<UserDAO> userDAO = Optional.ofNullable(userRepository.findByUsername(username));
+        return userDAO.map(u -> new User(u.getEmail(), u.getPassword()))
+                .orElseThrow(() -> new ResourceNotFoundException("Username", 0L)); //TODO fix this
     }
 
     @Override
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        Optional<UserDAO> userDAO = Optional.ofNullable(userRepository.findByEmail(email));
+        return userDAO.map(u -> new User(u.getEmail(), u.getPassword()))
+                .orElseThrow(() -> new ResourceNotFoundException("Email", email)); //TODO fix this
     }
 
     @Override

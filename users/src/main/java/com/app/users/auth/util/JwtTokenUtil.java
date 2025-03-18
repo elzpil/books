@@ -1,5 +1,4 @@
-package com.app.users.auth.util;/*
-package com.app.books.auth.util;
+package com.app.users.auth.util;
 
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,7 @@ import java.util.Map;
 @Component
 public class JwtTokenUtil {
 
-    private final String secretKey = "mysecretkey";  // Move this to application properties in production
+    private final String secretKey = "laksjduthgpqeerrnnjj123456789011laksjduthgp";  // Move this to application properties in production
     private final long expirationTime = 86400000;    // 24 hours in milliseconds
 
     public String generateToken(String username, Long userId) {
@@ -51,4 +50,4 @@ public class JwtTokenUtil {
         return username.equals(extractUsername(token)) && !isTokenExpired(token);
     }
 }
-*/
+
