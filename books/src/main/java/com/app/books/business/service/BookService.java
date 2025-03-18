@@ -13,4 +13,5 @@ public interface BookService {
     Book updateBook(Long bookId, Book book);
     void deleteBook(Long bookId);
     List<Book> getBooks(String genre, String author, String title);
+    boolean bookExists(Long bookId);
 }

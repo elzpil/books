@@ -102,4 +102,9 @@ public class BookServiceImpl implements BookService {
                 .map(bookMapper::bookDAOToBook)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean bookExists(Long bookId) {
+        return bookRepository.existsById(bookId);
+    }
 }

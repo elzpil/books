@@ -57,4 +57,14 @@ public class BookController {
         bookService.deleteBook(bookId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/exists/{bookId}")
+    public ResponseEntity<Void> checkUserExists(@PathVariable Long bookId) {
+        boolean bookExists = bookService.bookExists(bookId);
+        if (bookExists) {
+            return ResponseEntity.noContent().build(); // HTTP 204 No Content if user exists
+        } else {
+            return ResponseEntity.notFound().build(); // HTTP 404 Not Found if user does not exist
+        }
+    }
 }
