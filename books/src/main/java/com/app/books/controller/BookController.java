@@ -62,9 +62,9 @@ public class BookController {
     public ResponseEntity<Void> checkUserExists(@PathVariable Long bookId) {
         boolean bookExists = bookService.bookExists(bookId);
         if (bookExists) {
-            return ResponseEntity.noContent().build(); // HTTP 204 No Content if user exists
+            return ResponseEntity.noContent().build(); // HTTP 204 No Content if book exists
         } else {
-            return ResponseEntity.notFound().build(); // HTTP 404 Not Found if user does not exist
+            return ResponseEntity.notFound().build(); // HTTP 404 Not Found if book does not exist
         }
     }
 }
