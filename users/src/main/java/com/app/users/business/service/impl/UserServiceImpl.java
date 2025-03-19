@@ -104,12 +104,30 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Username", 0L)); //TODO fix this
     }
 
-    @Override
+   /* @Override
     public User findByEmail(String email) {
+        // Get the UserDAO object from the repository and handle it with Optional
         Optional<UserDAO> userDAO = Optional.ofNullable(userRepository.findByEmail(email));
-        return userDAO.map(u -> new User(u.getEmail(), u.getPassword()))
-                .orElseThrow(() -> new ResourceNotFoundException("Email", email)); //TODO fix this
+
+        // Check if the userDAO is present and then retrieve the user data
+        if (userDAO.isPresent()) {
+            UserDAO u = userDAO.get();  // Get the UserDAO object
+            System.out.println("findByEmail in service: " + u.getId());  // Now you can access getId()
+            return .map(userMapper::userDAOToUser);  // Map to User object
+        } else {
+            // Throw exception if the user is not found
+            throw new ResourceNotFoundException("Email", email);
+        }
+    }*/
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        log.info("Fetching user by email: {}", email);
+
+        return Optional.ofNullable(userRepository.findByEmail(email))
+                .map(userMapper::userDAOToUser);
     }
+
 
     @Override
     public boolean existsByUsername(String username) {

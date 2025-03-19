@@ -13,7 +13,7 @@ public interface UserService {
     Optional<User> updateUserRole(Long userId, String roleName);
 
     User findByUsername(String username);
-    User findByEmail(String email);
+    Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
     boolean userExists(Long userId);
 }

@@ -1,5 +1,6 @@
 package com.app.users.controller;
 
+import com.app.users.auth.util.JwtTokenUtil;
 import com.app.users.business.service.UserService;
 import com.app.users.model.User;
 import lombok.extern.slf4j.Slf4j;
@@ -14,11 +15,12 @@ import java.util.Optional;
 @RequestMapping("/users")
 public class UserController {
     private final UserService userService;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, JwtTokenUtil jwtTokenUtil) {
         this.userService = userService;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
-
     @PostMapping("/create")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         return ResponseEntity.ok(userService.saveUser(user));
@@ -32,16 +34,34 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<User> updateUser(@PathVariable Long userId, @RequestBody User updatedUser) {
+    public ResponseEntity<User> updateUser(@PathVariable Long userId,
+                                           @RequestBody User updatedUser,
+                                           @RequestHeader("Authorization") String token) {
+        log.info("Updating user, token: " + token);
+        if (!isAuthorized(token, userId)) {
+            return ResponseEntity.status(403).build();  // Forbidden if not authorized
+        }
         Optional<User> user = userService.updateUser(userId, updatedUser);
-        return user.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long userId,
+                                           @RequestHeader("Authorization") String token) {
+        if (!isAuthorized(token, userId)) {
+            return ResponseEntity.status(403).build();  // Forbidden if not authorized
+        }
         boolean deleted = userService.deleteUser(userId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    private boolean isAuthorized(String token, Long userId) {
+        String cleanToken = token.replace("Bearer ", "");
+        log.info(" Authorizing token: " + cleanToken);
+        Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
+        String role = jwtTokenUtil.extractRole(cleanToken);
+        log.info(" User id and role: {} {} ", tokenUserId, role);
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 
     @GetMapping

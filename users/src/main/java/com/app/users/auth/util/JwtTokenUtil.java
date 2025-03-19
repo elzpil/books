@@ -1,8 +1,11 @@
 package com.app.users.auth.util;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -10,13 +13,18 @@ import java.util.Map;
 @Component
 public class JwtTokenUtil {
 
-    private final String secretKey = "laksjduthgpqeerrnnjj123456789011laksjduthgp";  // Move this to application properties in production
-    private final long expirationTime = 86400000;    // 24 hours in milliseconds
+   // private final String secretKey = "YXNkZmFzZGZhc2RmYXNkZmFzZGZhc2RmYXNkZmFzZGZhc2RmYXNkZmY=";
+   // private final long expirationTime = 86400000; // 1 day in milliseconds
+
+    @Value("${jwt.secret}")
+    private String secretKey;
+
+    @Value("${jwt.expiration}")
+    private long expirationTime;
 
     public String generateToken(String username, Long userId, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
-        claims.put("username", username);
         claims.put("role", role);
 
         return Jwts.builder()
@@ -24,26 +32,46 @@ public class JwtTokenUtil {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(SignatureAlgorithm.HS256, secretKey)
+                .signWith(Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey)), SignatureAlgorithm.HS256)
                 .compact();
     }
 
+
     public Claims extractClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey)
+
+        return Jwts.parserBuilder()
+                .setSigningKey(Base64.getDecoder().decode(secretKey))
+                .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
+
     public String extractUsername(String token) {
-        return extractClaims(token).get("username", String.class);
+        Claims claims = extractClaims(token);
+        return claims.getSubject();
     }
 
     public Long extractUserId(String token) {
-        return extractClaims(token).get("userId", Long.class);
+        try {
+            Claims claims = extractClaims(token);
+            System.out.println("Extracted claims: " + claims);
+            return claims.get("userId", Long.class);
+        } catch (Exception e) {
+            System.err.println("Error extracting userId: " + e.getMessage());
+            return null;
+        }
     }
+
     public String extractRole(String token) {
-        return extractClaims(token).get("role", String.class);
+        try {
+            Claims claims = extractClaims(token);
+            System.out.println("Extracted claims: " + claims);
+            return claims.get("role", String.class);
+        } catch (Exception e) {
+            System.err.println("Error extracting role: " + e.getMessage());
+            return null;
+        }
     }
 
     public boolean isTokenExpired(String token) {
@@ -52,6 +80,7 @@ public class JwtTokenUtil {
 
     public boolean validateToken(String token, String username) {
         return username.equals(extractUsername(token)) && !isTokenExpired(token);
+
     }
 }
 

@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -39,8 +40,19 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, String>> login(@RequestBody User user) {
-        User existingUser = userService.findByEmail(user.getEmail()); // Fix: Use email instead of username
-        if (existingUser == null || !passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
+
+        Optional<User> existingUserOptional = userService.findByEmail(user.getEmail());
+
+        if (existingUserOptional.isEmpty()) {
+            System.out.println("User not found");
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid credentials"));
+        }
+
+        User existingUser = existingUserOptional.get();
+        System.out.println("Existing user email, id, role: " + existingUser.getEmail() + ", "
+                + existingUser.getId() + ", " + existingUser.getRole());
+
+        if (!passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
             return ResponseEntity.badRequest().body(Map.of("message", "Invalid credentials"));
         }
 
@@ -48,9 +60,10 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("token", token));
     }
 
+
     @PostMapping("/logout")
     public ResponseEntity<String> logout() {
-        // Optionally, implement a token blacklist mechanism
+
         return ResponseEntity.ok("User logged out successfully");
     }
 

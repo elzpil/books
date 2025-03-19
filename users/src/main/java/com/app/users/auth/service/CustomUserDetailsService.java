@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -24,11 +25,13 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userService.findByEmail(email);
+        Optional<User> userOptional = userService.findByEmail(email);
 
-        if (user == null) {
+        if (userOptional.isEmpty()) {
             throw new UsernameNotFoundException("User not found with email: " + email);
         }
+
+        User user = userOptional.get();
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
@@ -36,4 +39,5 @@ public class CustomUserDetailsService implements UserDetailsService {
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
         );
     }
+
 }
