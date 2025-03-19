@@ -10,6 +10,6 @@ public interface BookshelfService {
     List<BookshelfEntry> getUserBookshelf(Long userId);
     List<BookshelfEntry> getBookshelfByUserIdAndStatus(Long userId, String status);
     Optional<BookshelfEntry> getBookshelfEntry(Long bookshelfId);
-    BookshelfEntry updateReadingStatus(Long bookshelfId, String status);
-    void removeFromBookshelf(Long bookshelfId);
+    BookshelfEntry updateReadingStatus(Long bookshelfId, String status, String token);
+    void removeFromBookshelf(Long bookshelfId, String token);
 }

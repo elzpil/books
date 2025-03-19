@@ -46,15 +46,28 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user with ID: {}", userId);
 
         return userRepository.findById(userId).map(existingUser -> {
-            existingUser.setName(updatedUser.getName());
-            existingUser.setEmail(updatedUser.getEmail());
-            existingUser.setAvatarUrl(updatedUser.getAvatarUrl());
-            existingUser.setBio(updatedUser.getBio());
-            existingUser.setRole(updatedUser.getRole());
+            if (updatedUser.getName() != null) {
+                existingUser.setName(updatedUser.getName());
+            }
+            if (updatedUser.getEmail() != null) {
+                existingUser.setEmail(updatedUser.getEmail());
+            }
+            if (updatedUser.getAvatarUrl() != null) {
+                existingUser.setAvatarUrl(updatedUser.getAvatarUrl());
+            }
+            if (updatedUser.getBio() != null) {
+                existingUser.setBio(updatedUser.getBio());
+            }
+            if (updatedUser.getRole() != null) {
+                existingUser.setRole(updatedUser.getRole());
+            }
+
             UserDAO updatedDAO = userRepository.save(existingUser);
+
             return userMapper.userDAOToUser(updatedDAO);
         });
     }
+
 
     @Override
     public boolean deleteUser(Long userId) {

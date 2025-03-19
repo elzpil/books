@@ -13,9 +13,6 @@ import java.util.Map;
 @Component
 public class JwtTokenUtil {
 
-   // private final String secretKey = "YXNkZmFzZGZhc2RmYXNkZmFzZGZhc2RmYXNkZmFzZGZhc2RmYXNkZmY=";
-   // private final long expirationTime = 86400000; // 1 day in milliseconds
-
     @Value("${jwt.secret}")
     private String secretKey;
 

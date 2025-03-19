@@ -57,9 +57,9 @@ public class BookshelfController {
 
     @PutMapping("/{bookshelfId}")
     public ResponseEntity<BookshelfEntry> updateReadingStatus(
-            @PathVariable Long bookshelfId, @RequestParam String status) {
+            @PathVariable Long bookshelfId, @RequestParam String status, @RequestHeader("Authorization") String token) {
         log.info("Updating reading status for bookshelf entry {} to '{}'", bookshelfId, status);
-        BookshelfEntry updatedEntry = bookshelfService.updateReadingStatus(bookshelfId, status);
+        BookshelfEntry updatedEntry = bookshelfService.updateReadingStatus(bookshelfId, status, token);
         if (updatedEntry == null) {
             log.warn("Bookshelf entry {} not found", bookshelfId);
             return ResponseEntity.notFound().build();
@@ -69,9 +69,9 @@ public class BookshelfController {
     }
 
     @DeleteMapping("/{bookshelfId}")
-    public ResponseEntity<Void> removeFromBookshelf(@PathVariable Long bookshelfId) {
+    public ResponseEntity<Void> removeFromBookshelf(@PathVariable Long bookshelfId, @RequestHeader("Authorization") String token) {
         log.info("Removing bookshelf entry {}", bookshelfId);
-        bookshelfService.removeFromBookshelf(bookshelfId);
+        bookshelfService.removeFromBookshelf(bookshelfId, token);
         log.info("Bookshelf entry {} removed successfully", bookshelfId);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,6 @@
 package com.app.books.controller;
 
+import com.app.books.auth.util.JwtTokenUtil;
 import com.app.books.business.service.BookService;
 import com.app.books.exception.ResourceNotFoundException;
 import com.app.books.model.Book;
@@ -15,9 +16,11 @@ import java.util.List;
 @RequestMapping("/books")
 public class BookController {
     private final BookService bookService;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public BookController(BookService bookService) {
+    public BookController(BookService bookService, JwtTokenUtil jwtTokenUtil) {
         this.bookService = bookService;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @PostMapping
@@ -66,5 +69,14 @@ public class BookController {
         } else {
             return ResponseEntity.notFound().build(); // HTTP 404 Not Found if book does not exist
         }
+    }
+
+    private boolean isAuthorized(String token, Long userId) { //TODO change if creator id is added
+        String cleanToken = token.replace("Bearer ", "");
+        log.info(" Authorizing token: " + cleanToken);
+        Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
+        String role = jwtTokenUtil.extractRole(cleanToken);
+        log.info(" User id and role: {} {} ", tokenUserId, role);
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 }

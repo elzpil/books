@@ -76,12 +76,9 @@ public class UserController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
     @GetMapping("/exists/{userId}")
-    public ResponseEntity<Void> checkUserExists(@PathVariable Long userId) {
+    public ResponseEntity<Boolean> checkUserExists(@PathVariable Long userId) {
         boolean userExists = userService.userExists(userId);
-        if (userExists) {
-            return ResponseEntity.noContent().build(); // HTTP 204 No Content if user exists
-        } else {
-            return ResponseEntity.notFound().build(); // HTTP 404 Not Found if user does not exist
-        }
+        return ResponseEntity.ok(userExists);
     }
+
 }

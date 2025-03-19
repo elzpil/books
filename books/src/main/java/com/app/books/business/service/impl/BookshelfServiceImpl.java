@@ -1,10 +1,12 @@
 package com.app.books.business.service.impl;
 
+import com.app.books.auth.util.JwtTokenUtil;
 import com.app.books.business.mapper.BookshelfMapper;
 import com.app.books.business.repository.BookshelfRepository;
 import com.app.books.business.repository.model.BookshelfDAO;
 import com.app.books.business.service.BookshelfService;
 import com.app.books.exception.ResourceNotFoundException;
+import com.app.books.exception.UnauthorizedException;
 import com.app.books.model.BookshelfEntry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,12 +22,15 @@ public class BookshelfServiceImpl implements BookshelfService {
 
     private final BookshelfRepository bookshelfRepository;
     private final BookshelfMapper bookshelfMapper;
-    private final UserServiceClient userServiceClient;  // Inject UserServiceClient
+    private final UserServiceClient userServiceClient;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public BookshelfServiceImpl(BookshelfRepository bookshelfRepository, BookshelfMapper bookshelfMapper, UserServiceClient userServiceClient) {
+    public BookshelfServiceImpl(BookshelfRepository bookshelfRepository, BookshelfMapper bookshelfMapper,
+                                UserServiceClient userServiceClient, JwtTokenUtil jwtTokenUtil) {
         this.bookshelfRepository = bookshelfRepository;
         this.bookshelfMapper = bookshelfMapper;
         this.userServiceClient = userServiceClient;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
@@ -71,10 +76,15 @@ public class BookshelfServiceImpl implements BookshelfService {
 
     @Transactional
     @Override
-    public BookshelfEntry updateReadingStatus(Long bookshelfId, String status) {
+    public BookshelfEntry updateReadingStatus(Long bookshelfId, String status, String token) {
         log.info("Updating reading status for bookshelf entry {}", bookshelfId);
+
         BookshelfDAO entry = bookshelfRepository.findById(bookshelfId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookshelf entry", bookshelfId));
+
+        if (!isAuthorized(token, entry.getUserId())) {
+            throw new UnauthorizedException("User is not authorized to modify this bookshelf entry");
+        }
 
         entry.setStatus(status);
         BookshelfEntry updatedEntry = bookshelfMapper.bookshelfDAOToBookshelfEntry(bookshelfRepository.save(entry));
@@ -83,11 +93,24 @@ public class BookshelfServiceImpl implements BookshelfService {
     }
 
     @Override
-    public void removeFromBookshelf(Long bookshelfId) {
-        if (!bookshelfRepository.existsById(bookshelfId)) {
-            throw new ResourceNotFoundException("Bookshelf entry", bookshelfId);
+    public void removeFromBookshelf(Long bookshelfId, String token) {
+        log.info("Attempting to remove bookshelf entry {} with token: {}", bookshelfId, token);
+        BookshelfDAO entry = bookshelfRepository.findById(bookshelfId)
+                .orElseThrow(() -> new ResourceNotFoundException("Bookshelf entry", bookshelfId));
+        if (!isAuthorized(token, entry.getUserId())) {
+            throw new UnauthorizedException("User is not authorized to modify this bookshelf entry");
         }
+
         bookshelfRepository.deleteById(bookshelfId);
         log.info("Bookshelf entry {} removed successfully", bookshelfId);
     }
+
+
+    private boolean isAuthorized(String token, Long userId) {
+        String cleanToken = token.replace("Bearer ", "");
+        Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
+        String role = jwtTokenUtil.extractRole(cleanToken);
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
+    }
+
 }
