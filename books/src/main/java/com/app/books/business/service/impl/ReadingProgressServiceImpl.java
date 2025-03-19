@@ -1,5 +1,6 @@
 package com.app.books.business.service.impl;
 
+import com.app.books.auth.util.JwtTokenUtil;
 import com.app.books.business.mapper.ReadingProgressMapper;
 import com.app.books.business.repository.ReadingProgressRepository;
 import com.app.books.business.repository.model.ReadingProgressDAO;
@@ -21,12 +22,17 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
 
     private final ReadingProgressRepository repository;
     private final ReadingProgressMapper mapper;
-    private final UserServiceClient userServiceClient;  // Add the UserServiceClient
+    private final UserServiceClient userServiceClient;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public ReadingProgressServiceImpl(ReadingProgressRepository repository, ReadingProgressMapper mapper, UserServiceClient userServiceClient) {
+    public ReadingProgressServiceImpl(ReadingProgressRepository repository,
+                                      ReadingProgressMapper mapper,
+                                      UserServiceClient userServiceClient,
+                                      JwtTokenUtil jwtTokenUtil) {
         this.repository = repository;
         this.mapper = mapper;
         this.userServiceClient = userServiceClient;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
@@ -49,33 +55,32 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
 
     @Transactional
     @Override
-    public ReadingProgress updateProgress(Long progressId, ReadingProgress updatedProgress, Long userId) {
-        // Check if the user exists using UserServiceClient
-        if (!userServiceClient.doesUserExist(userId)) {
-            throw new IllegalArgumentException("User with ID " + userId + " does not exist");
+    public ReadingProgress updateProgress(Long progressId, Integer progress, String token) {
+        log.info("Updating reading progress ID {} to {}%", progressId, progress);
+
+        ReadingProgressDAO existingProgress = repository.findById(progressId)
+                .orElseThrow(() -> new RuntimeException("Reading progress not found"));
+
+        if (!isAuthorized(token, existingProgress.getUserId())) {
+            log.warn("Unauthorized attempt to update progress ID {} by user {}", progressId, jwtTokenUtil.extractUserId(token.replace("Bearer ", "")));
+            throw new RuntimeException("Unauthorized to update this progress");
         }
 
-        log.info("Updating progress ID {} for user {}: {}", progressId, userId, updatedProgress);
-        Optional<ReadingProgressDAO> existingProgressOpt = repository.findById(progressId);
+        existingProgress.setPercentageRead(progress);
+        existingProgress.setLastUpdated(LocalDateTime.now());
 
-        if (existingProgressOpt.isPresent()) {
-            ReadingProgressDAO existingProgress = existingProgressOpt.get();
+        ReadingProgressDAO savedProgress = repository.save(existingProgress);
+        log.info("Successfully updated progress ID {} to {}%", progressId, progress);
 
-            if (!existingProgress.getUserId().equals(userId)) {
-                log.warn("Unauthorized attempt to update progress ID {} by user {}", progressId, userId);
-                throw new RuntimeException("Unauthorized to update this progress");
-            }
+        return mapper.daoToProgress(savedProgress);
+    }
 
-            existingProgress.setPercentageRead(updatedProgress.getPercentageRead());
-            existingProgress.setLastUpdated(LocalDateTime.now());
 
-            ReadingProgressDAO savedProgress = repository.save(existingProgress);
-            log.info("Successfully updated progress ID {}", progressId);
-            return mapper.daoToProgress(savedProgress);
-        } else {
-            log.error("Reading progress not found with ID: {}", progressId);
-            throw new RuntimeException("Reading progress not found");
-        }
+    private boolean isAuthorized(String token, Long userId) {
+        String cleanToken = token.replace("Bearer ", "");
+        Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
+        String role = jwtTokenUtil.extractRole(cleanToken);
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 
     @Override
@@ -93,8 +98,18 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
     }
 
     @Override
-    public void deleteProgress(Long progressId) {
-        log.info("Deleting reading progress with ID: {}", progressId);
+    public void deleteProgress(Long progressId, String token) {
+        log.info("Attempting to delete reading progress with ID: {}", progressId);
+
+        ReadingProgressDAO progress = repository.findById(progressId)
+                .orElseThrow(() -> new RuntimeException("Reading progress not found"));
+
+        if (!isAuthorized(token, progress.getUserId())) {
+            log.warn("Unauthorized attempt to delete progress ID {} by user {}", progressId, jwtTokenUtil.extractUserId(token.replace("Bearer ", "")));
+            throw new RuntimeException("Unauthorized to delete this progress");
+        }
+
         repository.deleteById(progressId);
+        log.info("Successfully deleted reading progress with ID {}", progressId);
     }
 }

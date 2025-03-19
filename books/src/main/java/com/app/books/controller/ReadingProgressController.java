@@ -31,11 +31,11 @@ public class ReadingProgressController {
     @PutMapping("/{progressId}")
     public ResponseEntity<ReadingProgress> updateProgress(
             @PathVariable Long progressId,
-            @RequestParam Long userId,
-            @Valid @RequestBody ReadingProgress updatedProgress) {
+            @RequestParam Integer percentageRead,
+            @RequestHeader("Authorization") String token) {
 
-        log.info("Updating progress with ID {} for user {}: {}", progressId, userId, updatedProgress);
-        ReadingProgress updated = readingProgressService.updateProgress(progressId, updatedProgress, userId);
+        log.info("Updating progress with ID {} ", progressId );
+        ReadingProgress updated = readingProgressService.updateProgress(progressId, percentageRead, token);
         return ResponseEntity.ok(updated);
     }
 
@@ -54,9 +54,9 @@ public class ReadingProgressController {
     }
 
     @DeleteMapping("/{progressId}")
-    public ResponseEntity<Void> deleteProgress(@PathVariable Long progressId) {
+    public ResponseEntity<Void> deleteProgress(@PathVariable Long progressId, @RequestHeader("Authorization") String token) {
         log.info("Deleting reading progress with ID: {}", progressId);
-        readingProgressService.deleteProgress(progressId);
+        readingProgressService.deleteProgress(progressId, token);
         return ResponseEntity.noContent().build();
     }
 }
