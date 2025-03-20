@@ -21,9 +21,9 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<Comment> addComment(@Valid @RequestBody Comment comment) {
+    public ResponseEntity<Comment> addComment(@Valid @RequestBody Comment comment, @RequestHeader("Authorization") String token) {
         log.info("Adding comment for discussion: {}", comment.getDiscussionId());
-        Comment savedComment = commentService.addComment(comment);
+        Comment savedComment = commentService.addComment(comment, token);
         return ResponseEntity.ok(savedComment);
     }
 
@@ -35,9 +35,9 @@ public class CommentController {
     }
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId) {
+    public ResponseEntity<Void> deleteComment(@PathVariable Long commentId ,@RequestHeader("Authorization") String token) {
         log.info("Deleting comment for discussion: {}", commentId);
-        commentService.deleteComment(commentId);
+        commentService.deleteComment(commentId, token);
         return ResponseEntity.noContent().build();
     }
 }

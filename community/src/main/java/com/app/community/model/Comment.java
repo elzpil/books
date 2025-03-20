@@ -12,7 +12,7 @@ public class Comment {
     private Long commentId;
     @NotNull(message = "Discussion id is required")
     private Long discussionId;
-    @NotNull(message = "User id is required")
+
     private Long userId;
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String content;
