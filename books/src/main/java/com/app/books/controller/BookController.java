@@ -2,6 +2,7 @@ package com.app.books.controller;
 
 import com.app.books.auth.util.JwtTokenUtil;
 import com.app.books.business.service.BookService;
+import com.app.books.dto.BookUpdateDTO;
 import com.app.books.exception.ResourceNotFoundException;
 import com.app.books.model.Book;
 import jakarta.validation.Valid;
@@ -48,9 +49,9 @@ public class BookController {
     }
 
     @PutMapping("/{bookId}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long bookId, @Valid @RequestBody Book book) {
+    public ResponseEntity<Book> updateBook(@PathVariable Long bookId, @Valid @RequestBody BookUpdateDTO bookUpdateDTO) {
         log.info("Updating book with ID: {}", bookId);
-        Book updatedBook = bookService.updateBook(bookId, book);
+        Book updatedBook = bookService.updateBook(bookId, bookUpdateDTO);
         return ResponseEntity.ok(updatedBook);
     }
 
@@ -69,14 +70,5 @@ public class BookController {
         } else {
             return ResponseEntity.notFound().build(); // HTTP 404 Not Found if book does not exist
         }
-    }
-
-    private boolean isAuthorized(String token, Long userId) { //TODO change if creator id is added
-        String cleanToken = token.replace("Bearer ", "");
-        log.info(" Authorizing token: " + cleanToken);
-        Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
-        String role = jwtTokenUtil.extractRole(cleanToken);
-        log.info(" User id and role: {} {} ", tokenUserId, role);
-        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReadingProgressService {
-    ReadingProgress createProgress(ReadingProgress progress);
+    ReadingProgress createProgress(ReadingProgress progress, String token);
     ReadingProgress updateProgress(Long progressId, ReadingProgressUpdateDTO readingProgressUpdateDTO, String token);
     List<ReadingProgress> getProgressByUser(Long userId);
     Optional<ReadingProgress> getProgressById(Long progressId);

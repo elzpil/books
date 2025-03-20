@@ -22,9 +22,10 @@ public class ReviewController {
     }
 
     @PostMapping("/{bookId}/reviews")
-    public ResponseEntity<Review> addReview(@PathVariable Long bookId, @Valid @RequestBody Review review) {
+    public ResponseEntity<Review> addReview(@PathVariable Long bookId, @Valid @RequestBody Review review,
+                                            @RequestHeader("Authorization") String token) {
         log.info("Adding review for book ID {}: {}", bookId, review);
-        Review createdReview = reviewService.addReview(bookId, review);
+        Review createdReview = reviewService.addReview(bookId, review, token);
         return ResponseEntity.ok(createdReview);
     }
 

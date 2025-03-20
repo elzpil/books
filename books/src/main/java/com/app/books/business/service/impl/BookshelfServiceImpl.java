@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,18 +36,16 @@ public class BookshelfServiceImpl implements BookshelfService {
     }
 
     @Override
-    public BookshelfEntry addToBookshelf(BookshelfEntry entry) {
-        log.info("Saving book {} to user {}'s bookshelf", entry.getBookId(), entry.getUserId());
+    public BookshelfEntry addToBookshelf(BookshelfEntry entry, String token) {
+        log.info("Saving book {} to user's bookshelf", entry.getBookId());
 
-        if (!userServiceClient.doesUserExist(entry.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + entry.getUserId() + " does not exist");
-        }
-
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        entry.setUserId(userId);
         Optional<BookshelfDAO> existingEntry = bookshelfRepository.findByUserIdAndBookId(entry.getUserId(), entry.getBookId());
         if (existingEntry.isPresent()) {
             throw new IllegalStateException("This book is already in the user's bookshelf");
         }
-
+        entry.setCreatedAt(LocalDate.now());
         BookshelfDAO savedEntry = bookshelfRepository.save(bookshelfMapper.bookshelfEntryToBookshelfDAO(entry));
         BookshelfEntry result = bookshelfMapper.bookshelfDAOToBookshelfEntry(savedEntry);
         log.info("Saved bookshelf entry: {}", result);
@@ -92,7 +91,7 @@ public class BookshelfServiceImpl implements BookshelfService {
         }
 
         BookshelfEntry updatedEntry = bookshelfMapper.bookshelfDAOToBookshelfEntry(bookshelfRepository.save(entry));
-
+        updatedEntry.setCreatedAt(LocalDate.now());
         log.info("Successfully updated bookshelf entry: {}", updatedEntry);
         return updatedEntry;
     }

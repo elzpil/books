@@ -4,6 +4,7 @@ import com.app.books.business.mapper.BookMapper;
 import com.app.books.business.repository.BookRepository;
 import com.app.books.business.repository.model.BookDAO;
 import com.app.books.business.service.BookService;
+import com.app.books.dto.BookUpdateDTO;
 import com.app.books.exception.ResourceNotFoundException;
 import com.app.books.model.Book;
 import lombok.extern.slf4j.Slf4j;
@@ -54,21 +55,33 @@ public class BookServiceImpl implements BookService {
 
     @Transactional
     @Override
-    public Book updateBook(Long bookId, Book book) {
+    public Book updateBook(Long bookId, BookUpdateDTO bookUpdateDTO) {
         log.info("Updating book with ID: {}", bookId);
 
         BookDAO existingBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book", bookId));
 
-        existingBook.setTitle(book.getTitle());
-        existingBook.setAuthor(book.getAuthor());
-        existingBook.setDescription(book.getDescription());
-        existingBook.setPublishedDate(book.getPublishedDate());
-        existingBook.setGenre(book.getGenre());
+        if (bookUpdateDTO.getTitle() != null) {
+            existingBook.setTitle(bookUpdateDTO.getTitle());
+        }
+        if (bookUpdateDTO.getAuthor() != null) {
+            existingBook.setAuthor(bookUpdateDTO.getAuthor());
+        }
+        if (bookUpdateDTO.getDescription() != null) {
+            existingBook.setDescription(bookUpdateDTO.getDescription());
+        }
+        if (bookUpdateDTO.getPublishedDate() != null) {
+            existingBook.setPublishedDate(bookUpdateDTO.getPublishedDate());
+        }
+        if (bookUpdateDTO.getGenre() != null) {
+            existingBook.setGenre(bookUpdateDTO.getGenre());
+        }
 
         BookDAO updatedBook = bookRepository.save(existingBook);
+
         return bookMapper.bookDAOToBook(updatedBook);
     }
+
 
     @Override
     public void deleteBook(Long bookId) {

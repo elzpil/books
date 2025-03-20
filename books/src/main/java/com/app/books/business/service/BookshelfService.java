@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookshelfService {
-    BookshelfEntry addToBookshelf(BookshelfEntry entry);
+    BookshelfEntry addToBookshelf(BookshelfEntry entry, String token);
     List<BookshelfEntry> getUserBookshelf(Long userId);
     List<BookshelfEntry> getBookshelfByUserIdAndStatus(Long userId, String status);
     Optional<BookshelfEntry> getBookshelfEntry(Long bookshelfId);

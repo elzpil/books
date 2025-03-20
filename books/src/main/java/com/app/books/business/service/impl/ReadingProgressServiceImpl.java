@@ -6,6 +6,7 @@ import com.app.books.business.repository.ReadingProgressRepository;
 import com.app.books.business.repository.model.ReadingProgressDAO;
 import com.app.books.business.service.ReadingProgressService;
 import com.app.books.dto.ReadingProgressUpdateDTO;
+import com.app.books.exception.UnauthorizedException;
 import com.app.books.model.ReadingProgress;
 import com.app.books.business.service.impl.UserServiceClient;  // Import UserServiceClient
 import lombok.extern.slf4j.Slf4j;
@@ -37,18 +38,16 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
     }
 
     @Override
-    public ReadingProgress createProgress(ReadingProgress progress) {
-
-        if (!userServiceClient.doesUserExist(progress.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + progress.getUserId() + " does not exist");
-        }
-
-        Optional<ReadingProgressDAO> existingProgress = repository.findByUserIdAndBookId(progress.getUserId(), progress.getBookId());
+    public ReadingProgress createProgress(ReadingProgress progress, String token) {
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        Optional<ReadingProgressDAO> existingProgress = repository.findByUserIdAndBookId(userId, progress.getBookId());
 
         if (existingProgress.isPresent()) {
             throw new IllegalStateException("Duplicate progress");
         }
 
+        progress.setUserId(userId);
+        progress.setLastUpdated(LocalDateTime.now());
         log.info("Creating reading progress: {}", progress);
         ReadingProgressDAO progressDAO = repository.save(mapper.progressToDAO(progress));
         return mapper.daoToProgress(progressDAO);

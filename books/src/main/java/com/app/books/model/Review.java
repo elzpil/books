@@ -16,10 +16,9 @@ import java.time.LocalDateTime;
 public class Review {
     private Long id;
 
-    @NotNull(message = "Book ID cannot be null")
+
     private Long bookId;
 
-    @NotNull(message = "User ID cannot be null")
     private Long userId;
 
     @NotBlank(message = "Username cannot be blank")

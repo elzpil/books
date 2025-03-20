@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,24 +37,27 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public Review addReview(Long bookId, Review review) {
+    public Review addReview(Long bookId, Review review, String token) {
         log.info("Adding review for book ID {}: {}", bookId, review);
 
-        if (!userServiceClient.doesUserExist(review.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + review.getUserId() + " does not exist");
-        }
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
 
-        Optional<ReviewDAO> existingReview = reviewRepository.findByUserIdAndBookId(review.getUserId(), review.getBookId());
+        Optional<ReviewDAO> existingReview = reviewRepository.findByUserIdAndBookId(userId, bookId);
 
         if (existingReview.isPresent()) {
             throw new IllegalStateException("This user has already reviewed this book");
         }
 
+        review.setUserId(userId);
         review.setBookId(bookId);
+        review.setCreatedAt(LocalDateTime.now());
+
         ReviewDAO savedReview = reviewRepository.save(reviewMapper.reviewToReviewDAO(review));
         log.info("Successfully added review with ID: {}", savedReview.getId());
+
         return reviewMapper.reviewDAOToReview(savedReview);
     }
+
 
     @Override
     public List<Review> getReviewsByBookId(Long bookId) {
@@ -89,6 +93,8 @@ public class ReviewServiceImpl implements ReviewService {
         if (reviewUpdateDTO.getRating() != null) {
             existingReview.setRating(reviewUpdateDTO.getRating());
         }
+
+        existingReview.setCreatedAt(LocalDateTime.now());
 
         ReviewDAO savedReview = reviewRepository.save(existingReview);
         log.info("Successfully updated review ID {}", reviewId);

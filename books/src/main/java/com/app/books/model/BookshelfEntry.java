@@ -14,8 +14,7 @@ public class BookshelfEntry {
 
     private Long id;
 
-    @NotNull(message = "User ID cannot be null")
-    @Min(value = 1, message = "User ID must be a positive number")
+
     private Long userId;
 
     @NotNull(message = "Book ID cannot be null")

@@ -23,9 +23,9 @@ public class BookshelfController {
     }
 
     @PostMapping
-    public ResponseEntity<BookshelfEntry> addToBookshelf(@RequestBody BookshelfEntry entry) {
-        log.info("Adding book {} to user {}'s bookshelf", entry.getBookId(), entry.getUserId());
-        BookshelfEntry savedEntry = bookshelfService.addToBookshelf(entry);
+    public ResponseEntity<BookshelfEntry> addToBookshelf(@RequestBody BookshelfEntry entry, @RequestHeader("Authorization") String token) {
+        log.info("Adding book {} to user's bookshelf", entry.getBookId());
+        BookshelfEntry savedEntry = bookshelfService.addToBookshelf(entry, token);
         log.info("Book successfully added to bookshelf: {}", savedEntry);
         return ResponseEntity.ok(savedEntry);
     }

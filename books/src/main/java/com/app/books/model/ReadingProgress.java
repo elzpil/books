@@ -15,10 +15,8 @@ import java.time.LocalDateTime;
 public class ReadingProgress {
     private Long id;
 
-    @NotNull(message = "User ID cannot be null")
     private Long userId;
 
-    @NotNull(message = "Book ID cannot be null")
     private Long bookId;
 
     @Min(value = 0, message = "Percentage read must be at least 0")

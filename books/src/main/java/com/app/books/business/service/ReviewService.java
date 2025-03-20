@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReviewService {
-    Review addReview(Long bookId, Review review);
+    Review addReview(Long bookId, Review review, String token);
     List<Review> getReviewsByBookId(Long bookId);
     Optional<Review> getReviewById(Long reviewId);
     Review updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO, String token);

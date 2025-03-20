@@ -23,9 +23,10 @@ public class ReadingProgressController {
     }
 
     @PostMapping
-    public ResponseEntity<ReadingProgress> createProgress(@Valid @RequestBody ReadingProgress progress) {
+    public ResponseEntity<ReadingProgress> createProgress(@Valid @RequestBody ReadingProgress progress,
+                                                          @RequestHeader("Authorization") String token) {
         log.info("Creating reading progress: {}", progress);
-        ReadingProgress createdProgress = readingProgressService.createProgress(progress);
+        ReadingProgress createdProgress = readingProgressService.createProgress(progress, token);
         return ResponseEntity.ok(createdProgress);
     }
 
