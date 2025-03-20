@@ -17,7 +17,7 @@ public class Challenge {
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
 
-    @NotNull(message = "Creator ID is required")
+
     private Long creatorId;
 
     @NotNull(message = "Start date is required")

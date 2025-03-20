@@ -1,6 +1,7 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.ChallengeService;
+import com.app.community.dto.ChallengeUpdateDTO;
 import com.app.community.model.Challenge;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -22,9 +23,10 @@ public class ChallengeController {
     }
 
     @PostMapping
-    public ResponseEntity<Challenge> createChallenge(@Valid @RequestBody Challenge challenge) {
+    public ResponseEntity<Challenge> createChallenge(@Valid @RequestBody Challenge challenge,
+                                                     @RequestHeader("Authorization") String token) {
         log.info("Creating challenge: {}", challenge);
-        Challenge createdChallenge = challengeService.createChallenge(challenge);
+        Challenge createdChallenge = challengeService.createChallenge(challenge, token);
         return ResponseEntity.status(201).body(createdChallenge);
     }
 
@@ -43,15 +45,18 @@ public class ChallengeController {
     }
 
     @PutMapping("/{challengeId}")
-    public ResponseEntity<Challenge> updateChallenge(@PathVariable Long challengeId, @Valid @RequestBody Challenge challenge) {
-        log.info("Updating challenge ID {}: {}", challengeId, challenge);
-        return ResponseEntity.ok(challengeService.updateChallenge(challengeId, challenge));
+    public ResponseEntity<Challenge> updateChallenge(@PathVariable Long challengeId,
+                                                     @Valid @RequestBody ChallengeUpdateDTO challengeUpdateDTO,
+                                                     @RequestHeader("Authorization") String token) {
+        log.info("Updating challenge ID {}: {}", challengeId, challengeUpdateDTO);
+        return ResponseEntity.ok(challengeService.updateChallenge(challengeId, challengeUpdateDTO, token));
     }
 
     @DeleteMapping("/{challengeId}")
-    public ResponseEntity<Void> deleteChallenge(@PathVariable Long challengeId) {
+    public ResponseEntity<Void> deleteChallenge(@PathVariable Long challengeId,
+                                                @RequestHeader("Authorization") String token) {
         log.info("Deleting challenge ID {}", challengeId);
-        challengeService.deleteChallenge(challengeId);
+        challengeService.deleteChallenge(challengeId, token);
         return ResponseEntity.noContent().build();
     }
 }

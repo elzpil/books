@@ -59,7 +59,8 @@ public class ReadingProgressController {
     }
 
     @DeleteMapping("/{progressId}")
-    public ResponseEntity<Void> deleteProgress(@PathVariable Long progressId, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Void> deleteProgress(@PathVariable Long progressId,
+                                               @RequestHeader("Authorization") String token) {
         log.info("Deleting reading progress with ID: {}", progressId);
         readingProgressService.deleteProgress(progressId, token);
         return ResponseEntity.noContent().build();
