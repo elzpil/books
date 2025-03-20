@@ -1,7 +1,9 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.ChallengeParticipantService;
+import com.app.community.dto.ChallengeParticipantUpdateDTO;
 import com.app.community.model.ChallengeParticipant;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +22,10 @@ public class ChallengeParticipantController {
     }
 
     @PostMapping("/join")
-    public ResponseEntity<ChallengeParticipant> joinChallenge(@PathVariable Long challengeId, @RequestParam Long userId) {
+    public ResponseEntity<ChallengeParticipant> joinChallenge(@PathVariable Long challengeId,
+                                                              @RequestHeader("Authorization") String token) {
         log.info("Joining challenge with id: {}", challengeId);
-        return ResponseEntity.ok(participantService.joinChallenge(challengeId, userId));
+        return ResponseEntity.ok(participantService.joinChallenge(challengeId, token));
     }
 
     @GetMapping("/participants")
@@ -32,15 +35,18 @@ public class ChallengeParticipantController {
     }
 
     @PutMapping("/progress")
-    public ResponseEntity<ChallengeParticipant> updateProgress(@PathVariable Long challengeId, @RequestParam Long userId, @RequestParam int progress) {
+    public ResponseEntity<ChallengeParticipant> updateProgress(@PathVariable Long challengeId,
+                                                               @Valid @RequestBody ChallengeParticipantUpdateDTO challengeParticipantUpdateDTO,
+                                                               @RequestHeader("Authorization") String token) {
         log.info("Updating challenge progress: {}", challengeId);
-        return ResponseEntity.ok(participantService.updateProgress(challengeId, userId, progress));
+        return ResponseEntity.ok(participantService.updateProgress(challengeId,challengeParticipantUpdateDTO, token));
     }
 
     @DeleteMapping("/leave")
-    public ResponseEntity<Void> leaveChallenge(@PathVariable Long challengeId, @RequestParam Long userId) {
+    public ResponseEntity<Void> leaveChallenge(@PathVariable Long challengeId,
+                                               @RequestHeader("Authorization") String token) {
         log.info("Leaving challenge id: {}", challengeId);
-        participantService.leaveChallenge(challengeId, userId);
+        participantService.leaveChallenge(challengeId, token);
         return ResponseEntity.noContent().build();
     }
 }

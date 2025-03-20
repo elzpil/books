@@ -10,7 +10,7 @@ public class ChallengeParticipant {
     private Long userId;
     @NotBlank(message = "Challenge id is required")
     private Long challengeId;
-    private int progress;
+    private Integer progress;
     private boolean completed;
     private LocalDateTime joinedAt;
 

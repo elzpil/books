@@ -13,7 +13,6 @@ public class ReviewUpdateDTO {
     @Max(value = 5, message = "Rating cannot exceed 5")
     private Integer rating;
 
-    // Getters and Setters
     public String getContent() {
         return content;
     }
