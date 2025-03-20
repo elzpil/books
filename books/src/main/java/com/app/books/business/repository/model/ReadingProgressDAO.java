@@ -20,7 +20,7 @@ public class ReadingProgressDAO {
     private Long bookId;
 
     @Column(nullable = false)
-    private int percentageRead;
+    private Integer percentageRead;
 
     @Column(nullable = false)
     private LocalDateTime lastUpdated = LocalDateTime.now();

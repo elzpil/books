@@ -1,6 +1,7 @@
 package com.app.books.controller;
 
 import com.app.books.business.service.ReviewService;
+import com.app.books.dto.ReviewUpdateDTO;
 import com.app.books.model.Review;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -45,21 +46,20 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}")
     public ResponseEntity<Void> deleteReview(
             @PathVariable Long reviewId,
-            @RequestParam Long userId,
-            @RequestParam(required = false, defaultValue = "false") boolean isAdmin) {
-        log.info("Deleting review ID {} by user ID {} (Admin: {})", reviewId, userId, isAdmin);
-        reviewService.deleteReview(reviewId, userId, isAdmin);
+            @RequestHeader("Authorization") String token) {
+        log.info("Deleting review ID {}  ", reviewId);
+        reviewService.deleteReview(reviewId, token);
         return ResponseEntity.noContent().build();
     }
-
     @PutMapping("/reviews/{reviewId}")
     public ResponseEntity<Review> updateReview(
             @PathVariable Long reviewId,
-            @RequestParam Long userId,
-            @Valid @RequestBody Review updatedReview) {
+            @Valid @RequestBody ReviewUpdateDTO reviewUpdateDTO,
+            @RequestHeader("Authorization") String token) {
 
-        log.info("Updating review ID {} by user ID {}: {}", reviewId, userId, updatedReview);
-        Review review = reviewService.updateReview(reviewId, updatedReview, userId);
+        log.info("Updating review ID {}: {}", reviewId, reviewUpdateDTO);
+        Review review = reviewService.updateReview(reviewId, reviewUpdateDTO, token);
         return ResponseEntity.ok(review);
     }
+
 }

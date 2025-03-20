@@ -1,6 +1,7 @@
 package com.app.books.controller;
 
 import com.app.books.business.service.ReadingProgressService;
+import com.app.books.dto.ReadingProgressUpdateDTO;
 import com.app.books.model.ReadingProgress;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +32,16 @@ public class ReadingProgressController {
     @PutMapping("/{progressId}")
     public ResponseEntity<ReadingProgress> updateProgress(
             @PathVariable Long progressId,
-            @RequestParam Integer percentageRead,
+            @Valid @RequestBody ReadingProgressUpdateDTO readingProgressUpdateDTO,
             @RequestHeader("Authorization") String token) {
 
-        log.info("Updating progress with ID {} ", progressId );
-        ReadingProgress updated = readingProgressService.updateProgress(progressId, percentageRead, token);
+        log.info("Updating progress with ID {} to {}%", progressId, readingProgressUpdateDTO.getPercentageRead());
+
+        ReadingProgress updated = readingProgressService.updateProgress(progressId, readingProgressUpdateDTO, token);
+
         return ResponseEntity.ok(updated);
     }
+
 
     @GetMapping
     public ResponseEntity<List<ReadingProgress>> getProgressByUser(@RequestParam Long userId) {

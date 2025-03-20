@@ -5,6 +5,7 @@ import com.app.books.business.mapper.ReadingProgressMapper;
 import com.app.books.business.repository.ReadingProgressRepository;
 import com.app.books.business.repository.model.ReadingProgressDAO;
 import com.app.books.business.service.ReadingProgressService;
+import com.app.books.dto.ReadingProgressUpdateDTO;
 import com.app.books.model.ReadingProgress;
 import com.app.books.business.service.impl.UserServiceClient;  // Import UserServiceClient
 import lombok.extern.slf4j.Slf4j;
@@ -55,8 +56,9 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
 
     @Transactional
     @Override
-    public ReadingProgress updateProgress(Long progressId, Integer progress, String token) {
-        log.info("Updating reading progress ID {} to {}%", progressId, progress);
+    public ReadingProgress updateProgress(Long progressId, ReadingProgressUpdateDTO readingProgressUpdateDTO, String token) {
+        int percentageRead = readingProgressUpdateDTO.getPercentageRead();
+        log.info("Updating reading progress ID {} to {}%", progressId, percentageRead);
 
         ReadingProgressDAO existingProgress = repository.findById(progressId)
                 .orElseThrow(() -> new RuntimeException("Reading progress not found"));
@@ -66,19 +68,26 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
             throw new RuntimeException("Unauthorized to update this progress");
         }
 
-        existingProgress.setPercentageRead(progress);
+        if (readingProgressUpdateDTO.getPercentageRead() != null) {
+            existingProgress.setPercentageRead(percentageRead);
+        }
+        existingProgress.setPercentageRead(percentageRead);
         existingProgress.setLastUpdated(LocalDateTime.now());
 
         ReadingProgressDAO savedProgress = repository.save(existingProgress);
-        log.info("Successfully updated progress ID {} to {}%", progressId, progress);
 
+        log.info("Successfully updated progress ID {} to {}%", progressId, percentageRead);
+
+        // Return the updated progress as a DTO
         return mapper.daoToProgress(savedProgress);
     }
+
 
 
     private boolean isAuthorized(String token, Long userId) {
         String cleanToken = token.replace("Bearer ", "");
         Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
+        System.out.println("usr id form token " + tokenUserId);
         String role = jwtTokenUtil.extractRole(cleanToken);
         return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }

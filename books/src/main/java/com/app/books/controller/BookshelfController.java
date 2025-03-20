@@ -1,7 +1,9 @@
 package com.app.books.controller;
 
 import com.app.books.business.service.BookshelfService;
+import com.app.books.dto.BookshelfUpdateDTO;
 import com.app.books.model.BookshelfEntry;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -57,16 +59,23 @@ public class BookshelfController {
 
     @PutMapping("/{bookshelfId}")
     public ResponseEntity<BookshelfEntry> updateReadingStatus(
-            @PathVariable Long bookshelfId, @RequestParam String status, @RequestHeader("Authorization") String token) {
-        log.info("Updating reading status for bookshelf entry {} to '{}'", bookshelfId, status);
-        BookshelfEntry updatedEntry = bookshelfService.updateReadingStatus(bookshelfId, status, token);
+            @PathVariable Long bookshelfId,
+            @Valid @RequestBody BookshelfUpdateDTO bookshelfUpdateDTO,
+            @RequestHeader("Authorization") String token) {
+
+        log.info("Updating reading status for bookshelf entry {} to '{}'", bookshelfId, bookshelfUpdateDTO.getStatus());
+
+        BookshelfEntry updatedEntry = bookshelfService.updateReadingStatus(bookshelfId, bookshelfUpdateDTO, token);
+
         if (updatedEntry == null) {
             log.warn("Bookshelf entry {} not found", bookshelfId);
             return ResponseEntity.notFound().build();
         }
-        log.info("Updated bookshelf entry: {}", updatedEntry);
+
+        log.info("Successfully updated bookshelf entry: {}", updatedEntry);
         return ResponseEntity.ok(updatedEntry);
     }
+
 
     @DeleteMapping("/{bookshelfId}")
     public ResponseEntity<Void> removeFromBookshelf(@PathVariable Long bookshelfId, @RequestHeader("Authorization") String token) {

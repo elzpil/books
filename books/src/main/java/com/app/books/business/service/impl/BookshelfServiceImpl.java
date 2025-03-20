@@ -5,6 +5,7 @@ import com.app.books.business.mapper.BookshelfMapper;
 import com.app.books.business.repository.BookshelfRepository;
 import com.app.books.business.repository.model.BookshelfDAO;
 import com.app.books.business.service.BookshelfService;
+import com.app.books.dto.BookshelfUpdateDTO;
 import com.app.books.exception.ResourceNotFoundException;
 import com.app.books.exception.UnauthorizedException;
 import com.app.books.model.BookshelfEntry;
@@ -76,21 +77,26 @@ public class BookshelfServiceImpl implements BookshelfService {
 
     @Transactional
     @Override
-    public BookshelfEntry updateReadingStatus(Long bookshelfId, String status, String token) {
+    public BookshelfEntry updateReadingStatus(Long bookshelfId, BookshelfUpdateDTO bookshelfUpdateDTO, String token) {
         log.info("Updating reading status for bookshelf entry {}", bookshelfId);
 
         BookshelfDAO entry = bookshelfRepository.findById(bookshelfId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookshelf entry", bookshelfId));
 
         if (!isAuthorized(token, entry.getUserId())) {
+            log.warn("Unauthorized attempt to modify bookshelf entry {} by user", bookshelfId);
             throw new UnauthorizedException("User is not authorized to modify this bookshelf entry");
         }
+        if (bookshelfUpdateDTO.getStatus() != null) {
+            entry.setStatus(bookshelfUpdateDTO.getStatus());
+        }
 
-        entry.setStatus(status);
         BookshelfEntry updatedEntry = bookshelfMapper.bookshelfDAOToBookshelfEntry(bookshelfRepository.save(entry));
-        log.info("Updated bookshelf entry: {}", updatedEntry);
+
+        log.info("Successfully updated bookshelf entry: {}", updatedEntry);
         return updatedEntry;
     }
+
 
     @Override
     public void removeFromBookshelf(Long bookshelfId, String token) {

@@ -30,7 +30,7 @@ public class ReviewDAO {
     @Min(1)
     @Max(5)
     @Column(nullable = false)
-    private int rating;
+    private Integer rating;
 
     @Column(name = "created_at", updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;

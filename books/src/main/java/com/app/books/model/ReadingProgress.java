@@ -23,7 +23,7 @@ public class ReadingProgress {
 
     @Min(value = 0, message = "Percentage read must be at least 0")
     @Max(value = 100, message = "Percentage read cannot exceed 100")
-    private int percentageRead;
+    private Integer percentageRead;
 
     private LocalDateTime lastUpdated = LocalDateTime.now();
 }

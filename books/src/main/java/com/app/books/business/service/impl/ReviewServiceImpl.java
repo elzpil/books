@@ -1,11 +1,14 @@
 package com.app.books.business.service.impl;
 
+import com.app.books.auth.util.JwtTokenUtil;
 import com.app.books.business.mapper.ReviewMapper;
 import com.app.books.business.repository.ReviewRepository;
 import com.app.books.business.repository.model.ReviewDAO;
 import com.app.books.business.service.ReviewService;
+import com.app.books.dto.ReviewUpdateDTO;
+import com.app.books.exception.ResourceNotFoundException;
+import com.app.books.exception.UnauthorizedException;
 import com.app.books.model.Review;
-import com.app.books.business.service.impl.UserServiceClient;  // Import UserServiceClient
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,19 +23,22 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
-    private final UserServiceClient userServiceClient;  // Add UserServiceClient
+    private final UserServiceClient userServiceClient;
 
-    public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewMapper reviewMapper, UserServiceClient userServiceClient) {
+    private final JwtTokenUtil jwtTokenUtil;
+
+    public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewMapper reviewMapper,
+                             UserServiceClient userServiceClient, JwtTokenUtil jwtTokenUtil) {
         this.reviewRepository = reviewRepository;
         this.reviewMapper = reviewMapper;
         this.userServiceClient = userServiceClient;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
     public Review addReview(Long bookId, Review review) {
         log.info("Adding review for book ID {}: {}", bookId, review);
 
-        // Check if the user exists using UserServiceClient
         if (!userServiceClient.doesUserExist(review.getUserId())) {
             throw new IllegalArgumentException("User with ID " + review.getUserId() + " does not exist");
         }
@@ -62,59 +68,58 @@ public class ReviewServiceImpl implements ReviewService {
         log.info("Fetching review by ID: {}", reviewId);
         return reviewRepository.findById(reviewId).map(reviewMapper::reviewDAOToReview);
     }
-
     @Transactional
     @Override
-    public Review updateReview(Long reviewId, Review review, Long userId) {
-        log.info("Updating review ID {} by user ID {}: {}", reviewId, userId, review);
+    public Review updateReview(Long reviewId, ReviewUpdateDTO reviewUpdateDTO, String token) {
+        log.info("Updating review ID {}: {}", reviewId, reviewUpdateDTO);
 
-        // Check if the user exists using UserServiceClient
-        if (!userServiceClient.doesUserExist(userId)) {
-            throw new IllegalArgumentException("User with ID " + userId + " does not exist");
+        ReviewDAO existingReview = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingReview.getUserId())) {
+            log.warn("Unauthorized attempt to update review ID {} by user ID {}", reviewId, existingReview.getUserId());
+            throw new UnauthorizedException("You are not authorized to update this review");
         }
 
-        Optional<ReviewDAO> existingReview = reviewRepository.findById(reviewId);
-
-        if (existingReview.isPresent()) {
-            ReviewDAO updatedReview = existingReview.get();
-
-            if (!updatedReview.getUserId().equals(userId)) {
-                log.warn("Unauthorized attempt to update review ID {} by user ID {}", reviewId, userId);
-                throw new RuntimeException("Unauthorized to update this review");
-            }
-
-            updatedReview.setContent(review.getContent());
-            updatedReview.setRating(review.getRating());
-            ReviewDAO savedReview = reviewRepository.save(updatedReview);
-            log.info("Successfully updated review ID {}", reviewId);
-            return reviewMapper.reviewDAOToReview(savedReview);
+        if (reviewUpdateDTO.getContent() != null) {
+            existingReview.setContent(reviewUpdateDTO.getContent());
         }
 
-        log.error("Review not found with ID: {}", reviewId);
-        throw new RuntimeException("Review not found");
+        if (reviewUpdateDTO.getRating() != null) {
+            existingReview.setRating(reviewUpdateDTO.getRating());
+        }
+
+        ReviewDAO savedReview = reviewRepository.save(existingReview);
+        log.info("Successfully updated review ID {}", reviewId);
+
+        return reviewMapper.reviewDAOToReview(savedReview);
     }
 
+
+
     @Override
-    public void deleteReview(Long reviewId, Long userId, boolean isAdmin) {
-        log.info("Attempting to delete review ID {} by user ID {} (Admin: {})", reviewId, userId, isAdmin);
+    public void deleteReview(Long reviewId, String token) {
+        log.info("Attempting to delete review ID {}", reviewId);
 
-        if (!userServiceClient.doesUserExist(userId)) {
-            throw new IllegalArgumentException("User with ID " + userId + " does not exist");
+        ReviewDAO existingReview = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingReview.getUserId())) {
+            log.warn("Unauthorized attempt to delete review ID {} by user ID {}", reviewId, existingReview.getUserId());
+            throw new UnauthorizedException("You are not authorized to delete this review");
         }
 
-        Optional<ReviewDAO> existingReview = reviewRepository.findById(reviewId);
+        reviewRepository.deleteById(reviewId);
+        log.info("Successfully deleted review ID {}", reviewId);
+    }
 
-        if (existingReview.isPresent()) {
-            if (!existingReview.get().getUserId().equals(userId) && !isAdmin) {
-                log.warn("Unauthorized attempt to delete review ID {} by user ID {}", reviewId, userId);
-                throw new RuntimeException("Unauthorized to delete this review");
-            }
 
-            reviewRepository.deleteById(reviewId);
-            log.info("Successfully deleted review ID {}", reviewId);
-        } else {
-            log.error("Review not found with ID: {}", reviewId);
-            throw new RuntimeException("Review not found");
-        }
+    private boolean isAuthorized(String token, Long userId) {
+        String cleanToken = token.replace("Bearer ", "");
+        Long tokenUserId = jwtTokenUtil.extractUserId(cleanToken);
+        String role = jwtTokenUtil.extractRole(cleanToken);
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 }
