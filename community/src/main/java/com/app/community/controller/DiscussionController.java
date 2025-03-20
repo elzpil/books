@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.app.community.dto.DiscussionUpdateDTO;
 
 import java.util.List;
 
@@ -23,15 +24,12 @@ public class DiscussionController {
         this.userServiceClient = userServiceClient;
     }
     @PostMapping
-    public ResponseEntity<Discussion> createDiscussion(@RequestBody @Valid Discussion discussion) {
+    public ResponseEntity<Discussion> createDiscussion(@RequestBody @Valid Discussion discussion,
+                                                       @RequestHeader("Authorization") String token) {
 
-        if (!userServiceClient.doesUserExist(discussion.getUserId())) {
-            log.error("User with ID {} does not exist", discussion.getUserId());
-            return ResponseEntity.badRequest().build();
-        }
 
         log.info("Creating discussion with title: {}", discussion.getTitle());
-        Discussion createdDiscussion = discussionService.createDiscussion(discussion);
+        Discussion createdDiscussion = discussionService.createDiscussion(discussion, token);
         return ResponseEntity.ok(createdDiscussion);
     }
 
@@ -53,17 +51,18 @@ public class DiscussionController {
 
     @PutMapping("/{discussionId}")
     public ResponseEntity<Discussion> updateDiscussion(@PathVariable Long discussionId,
-                                                       @RequestParam String title,
-                                                       @RequestParam String content) {
-        Discussion updatedDiscussion = discussionService.updateDiscussion(discussionId, title, content);
+                                                       @RequestBody DiscussionUpdateDTO discussionUpdateDTO,
+                                                       @RequestHeader("Authorization") String token) {
+        Discussion updatedDiscussion = discussionService.updateDiscussion(discussionId, discussionUpdateDTO, token);
         log.info("Updating discusion with id {}", discussionId);
         return updatedDiscussion != null ? ResponseEntity.ok(updatedDiscussion) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{discussionId}")
-    public ResponseEntity<Void> deleteDiscussion(@PathVariable Long discussionId) {
+    public ResponseEntity<Void> deleteDiscussion(@PathVariable Long discussionId,
+                                                 @RequestHeader("Authorization") String token) {
         log.info("Deleting discusion with id {}", discussionId);
-        discussionService.deleteDiscussion(discussionId);
+        discussionService.deleteDiscussion(discussionId, token);
         return ResponseEntity.noContent().build();
     }
 }

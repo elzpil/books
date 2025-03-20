@@ -101,9 +101,21 @@ public class ChallengeServiceImpl implements ChallengeService {
 
     @Override
     public void deleteChallenge(Long challengeId, String token) {
+
+        ChallengeDAO existingChallenge = challengeRepository.findById(challengeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Challenge", challengeId));
+
+        // Authorization check
+        if (!isAuthorized(token, existingChallenge.getCreatorId())) {
+            log.warn("Unauthorized attempt to update challenge ID {} by user ID {}", challengeId, jwtTokenUtil.extractUserId(token.replace("Bearer ", "")));
+            throw new UnauthorizedException("You are not authorized to update this challenge");
+        }
+
         log.info("Deleting challenge ID {}", challengeId);
         challengeRepository.deleteById(challengeId);
     }
+
+
 
     private boolean isAuthorized(String token, Long userId) {
         String cleanToken = token.replace("Bearer ", "");

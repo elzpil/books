@@ -1,10 +1,13 @@
 package com.app.community.business.service.impl;
 
+import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.DiscussionMapper;
 import com.app.community.business.repository.DiscussionRepository;
-import com.app.community.business.repository.model.CommentDAO;
 import com.app.community.business.repository.model.DiscussionDAO;
 import com.app.community.business.service.DiscussionService;
+import com.app.community.dto.DiscussionUpdateDTO;
+import com.app.community.exception.ResourceNotFoundException;
+import com.app.community.exception.UnauthorizedException;
 import com.app.community.model.Discussion;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,35 +25,36 @@ public class DiscussionServiceImpl implements DiscussionService {
     private final DiscussionRepository discussionRepository;
     private final DiscussionMapper discussionMapper;
     private final UserServiceClient userServiceClient;
-
     private final BookServiceClient bookServiceClient;
+    private final JwtTokenUtil jwtTokenUtil;
 
     public DiscussionServiceImpl(DiscussionRepository discussionRepository,
                                  DiscussionMapper discussionMapper,
                                  UserServiceClient userServiceClient,
-                                 BookServiceClient bookServiceClient) {
+                                 BookServiceClient bookServiceClient,
+                                 JwtTokenUtil jwtTokenUtil) {
         this.discussionRepository = discussionRepository;
         this.discussionMapper = discussionMapper;
         this.userServiceClient = userServiceClient;
         this.bookServiceClient = bookServiceClient;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
-    public Discussion createDiscussion(Discussion discussion) {
-        Long userId = discussion.getUserId();
+    public Discussion createDiscussion(Discussion discussion, String token) {
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
         log.info("Validating user with ID: {}", userId);
-        if (!userServiceClient.doesUserExist(userId)) {
-            throw new IllegalArgumentException("User with ID " + userId + " does not exist.");
-        }
-        if(discussion.getBookId() != null){
+
+        if (discussion.getBookId() != null) {
             log.info("Validating book with ID: {}", discussion.getBookId());
             if (!bookServiceClient.doesBookExist(discussion.getBookId())) {
-                throw new IllegalArgumentException("Book with ID " + userId + " does not exist.");
+                throw new IllegalArgumentException("Book with ID " + discussion.getBookId() + " does not exist.");
             }
         }
-
+        discussion.setCreatedAt(LocalDateTime.now());
+        discussion.setUserId(userId);
         DiscussionDAO discussionDAO = discussionRepository.save(discussionMapper.discussionToDiscussionDAO(discussion));
-        discussionDAO.setCreatedAt(LocalDateTime.now());
+
         log.info("Saving new discussion: {}", discussionDAO);
         return discussionMapper.discussionDAOToDiscussion(discussionDAO);
     }
@@ -76,26 +80,53 @@ public class DiscussionServiceImpl implements DiscussionService {
     @Override
     public Discussion getDiscussion(Long discussionId) {
         Optional<DiscussionDAO> discussionDAO = discussionRepository.findById(discussionId);
-        log.info("getting disxusssion: {}", discussionId);
+        log.info("Getting discussion: {}", discussionId);
         return discussionDAO.map(discussionMapper::discussionDAOToDiscussion).orElse(null);
     }
 
     @Transactional
     @Override
-    public Discussion updateDiscussion(Long discussionId, String title, String content) {
+    public Discussion updateDiscussion(Long discussionId, DiscussionUpdateDTO discussionUpdateDTO, String token) {
+
         Optional<DiscussionDAO> existingDiscussion = discussionRepository.findById(discussionId);
         if (existingDiscussion.isPresent()) {
+            Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+            if (!isAuthorized(token, existingDiscussion.get().getUserId())) {
+                log.warn("Unauthorized attempt to delete discussion ID {} by user ID {}", discussionId, userId);
+                throw new UnauthorizedException("You are not authorized to delete this discussion");
+            }
             DiscussionDAO discussionDAO = existingDiscussion.get();
-            discussionDAO.setTitle(title);
-            discussionDAO.setContent(content);
+            if( discussionUpdateDTO.getTitle() != null) {
+                discussionDAO.setTitle(discussionUpdateDTO.getTitle());
+            }
+            if( discussionUpdateDTO.getContent() != null) {
+                discussionDAO.setContent(discussionUpdateDTO.getContent());
+            }
             return discussionMapper.discussionDAOToDiscussion(discussionRepository.save(discussionDAO));
         }
         return null;
     }
 
     @Override
-    public void deleteDiscussion(Long discussionId) {
-        log.info("deleting disxusssion with id: {}", discussionId);
+    public void deleteDiscussion(Long discussionId, String token) {
+        log.info("Attempting to delete discussion ID {}", discussionId);
+
+        DiscussionDAO existingDiscussion= discussionRepository.findById(discussionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Discussion", discussionId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingDiscussion.getUserId())) {
+            log.warn("Unauthorized attempt to delete discussion ID {} by user ID {}", discussionId, existingDiscussion.getUserId());
+            throw new UnauthorizedException("You are not authorized to delete this discussion");
+        }
+
         discussionRepository.deleteById(discussionId);
+        log.info("Successfully deleted discussion ID {}", discussionId);
+    }
+
+    private boolean isAuthorized(String token, Long commentOwnerId) {
+        Long tokenUserId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        String role = jwtTokenUtil.extractRole(token.replace("Bearer ", ""));
+        return tokenUserId.equals(commentOwnerId) || "ADMIN".equals(role);
     }
 }
