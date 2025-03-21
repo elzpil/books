@@ -1,7 +1,9 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.EventService;
+import com.app.community.dto.EventUpdateDTO;
 import com.app.community.model.Event;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +23,9 @@ public class EventController {
     }
 
     @PostMapping
-    public ResponseEntity<Event> createEvent(@RequestBody Event event) {
-        return ResponseEntity.ok(eventService.createEvent(event));
+    public ResponseEntity<Event> createEvent(@RequestBody Event event,
+                                             @RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(eventService.createEvent(event, token));
     }
 
     @GetMapping
@@ -42,15 +45,17 @@ public class EventController {
     }
 
     @PutMapping("/{eventId}")
-    public ResponseEntity<Event> updateEvent(@PathVariable Long eventId, @RequestBody Event event) {
+    public ResponseEntity<Event> updateEvent(@PathVariable Long eventId, @Valid @RequestBody EventUpdateDTO eventUpdateDTO,
+                                             @RequestHeader("Authorization") String token) {
+
         log.info("Updating event with id: {}", eventId);
-        Event updatedEvent = eventService.updateEvent(eventId, event);
+        Event updatedEvent = eventService.updateEvent(eventId, eventUpdateDTO, token);
         return updatedEvent != null ? ResponseEntity.ok(updatedEvent) : ResponseEntity.notFound().build();
     }
 
     @DeleteMapping("/{eventId}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId) {
-        eventService.deleteEvent(eventId);
+    public ResponseEntity<Void> deleteEvent(@PathVariable Long eventId, @RequestHeader("Authorization") String token) {
+        eventService.deleteEvent(eventId, token);
         log.info("Deleting event with id: {}", eventId);
         return ResponseEntity.noContent().build();
     }

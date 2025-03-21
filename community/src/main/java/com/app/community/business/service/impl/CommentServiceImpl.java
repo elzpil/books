@@ -78,9 +78,9 @@ public class CommentServiceImpl implements CommentService {
         log.info("Successfully deleted comment ID {}", commentId);
     }
 
-    private boolean isAuthorized(String token, Long commentOwnerId) {
+    private boolean isAuthorized(String token, Long userId) {
         Long tokenUserId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
         String role = jwtTokenUtil.extractRole(token.replace("Bearer ", ""));
-        return tokenUserId.equals(commentOwnerId) || "ADMIN".equals(role);
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 }

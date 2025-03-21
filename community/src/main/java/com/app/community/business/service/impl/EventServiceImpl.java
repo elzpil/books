@@ -1,9 +1,15 @@
 package com.app.community.business.service.impl;
 
+import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.EventMapper;
 import com.app.community.business.repository.EventRepository;
 import com.app.community.business.repository.model.EventDAO;
+import com.app.community.business.repository.model.EventDAO;
 import com.app.community.business.service.EventService;
+import com.app.community.dto.EventUpdateDTO;
+import com.app.community.exception.ResourceNotFoundException;
+import com.app.community.exception.UnauthorizedException;
+import com.app.community.model.Event;
 import com.app.community.model.Event;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,19 +24,26 @@ public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final JwtTokenUtil jwtTokenUtil;
 
-    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper) {
+    public EventServiceImpl(EventRepository eventRepository, EventMapper eventMapper,
+                            JwtTokenUtil jwtTokenUtil) {
         this.eventRepository = eventRepository;
         this.eventMapper = eventMapper;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
-    public Event createEvent(Event event) {
-        EventDAO eventDAO = eventMapper.eventToEventDAO(event);
-        eventDAO.setCreatedAt(LocalDateTime.now());
-        EventDAO savedEvent = eventRepository.save(eventDAO);
-        log.info("Creating event: {}", eventDAO);
-        return eventMapper.eventDAOToEvent(savedEvent);
+    public Event createEvent(Event event, String token) {
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        log.info("Validating user with ID: {}", userId);
+
+        event.setCreatedAt(LocalDateTime.now());
+        event.setUserId(userId);
+        EventDAO discussionDAO = eventRepository.save(eventMapper.eventToEventDAO(event));
+
+        log.info("Saving new event: {}", discussionDAO);
+        return eventMapper.eventDAOToEvent(discussionDAO);
     }
 
     @Override
@@ -57,22 +70,49 @@ public class EventServiceImpl implements EventService {
 
     @Transactional
     @Override
-    public Event updateEvent(Long eventId, Event event) {
-        EventDAO eventDAO = eventRepository.findById(eventId).orElse(null);
-        if (eventDAO != null) {
-            eventDAO.setName(event.getName());
-            eventDAO.setDescription(event.getDescription());
-            eventDAO.setEventDate(event.getEventDate());
-            EventDAO updatedEvent = eventRepository.save(eventDAO);
-            log.info("Updating event: {}", eventDAO);
-            return eventMapper.eventDAOToEvent(updatedEvent);
+    public Event updateEvent(Long eventId, EventUpdateDTO eventUpdateDTO, String token) {
+
+        EventDAO existingEvent= eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingEvent.getUserId())) {
+            log.warn("Unauthorized attempt to delete event ID {} by user ID {}", eventId, existingEvent.getUserId());
+            throw new UnauthorizedException("You are not authorized to delete this event");
         }
-        return null;
+
+        if (eventUpdateDTO.getName() != null) {
+            existingEvent.setName(eventUpdateDTO.getName());
+        }
+        if (eventUpdateDTO.getDescription() != null) {
+            existingEvent.setDescription(eventUpdateDTO.getDescription());
+        }
+        if (eventUpdateDTO.getEventDate() != null) {
+            existingEvent.setEventDate(eventUpdateDTO.getEventDate());
+        }
+
+        EventDAO updatedEvent = eventRepository.save(existingEvent);
+        log.info("Updating event: {}", existingEvent);
+        return eventMapper.eventDAOToEvent(updatedEvent);
     }
 
     @Override
-    public void deleteEvent(Long eventId) {
+    public void deleteEvent(Long eventId, String token) {
+        EventDAO existingEvent= eventRepository.findById(eventId)
+                .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingEvent.getUserId())) {
+            log.warn("Unauthorized attempt to delete event ID {} by user ID {}", eventId, existingEvent.getUserId());
+            throw new UnauthorizedException("You are not authorized to delete this event");
+        }
         log.info("Deleting event with id: {}", eventId);
         eventRepository.deleteById(eventId);
+    }
+
+    private boolean isAuthorized(String token, Long userId) {
+        Long tokenUserId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        String role = jwtTokenUtil.extractRole(token.replace("Bearer ", ""));
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 }

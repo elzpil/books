@@ -27,6 +27,8 @@ public class EventDAO {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+    @Column(name = "user_id")
+    private Long userId;
 
     public EventDAO() {}
     public Long getEventId() { return eventId; }
@@ -47,6 +49,14 @@ public class EventDAO {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     @Override
     public String toString() {
         return "EventDAO{" +
@@ -56,6 +66,7 @@ public class EventDAO {
                 ", description='" + description + '\'' +
                 ", eventDate=" + eventDate +
                 ", createdAt=" + createdAt +
+                ", userID=" + userId +
                 '}';
     }
 

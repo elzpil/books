@@ -9,6 +9,7 @@ public class Event {
     private Long eventId;
     @NotBlank(message = "Group id is required")
     private Long groupId;
+    private Long userId; //creator
     @NotBlank(message = "Event name is required")
     private String name;
     @NotBlank(message = "User id is required")
@@ -35,4 +36,12 @@ public class Event {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 }
