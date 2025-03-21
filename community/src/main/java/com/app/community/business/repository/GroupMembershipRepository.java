@@ -4,8 +4,10 @@ import com.app.community.business.repository.model.GroupMembershipDAO;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface GroupMembershipRepository extends JpaRepository<GroupMembershipDAO, Long> {
     List<GroupMembershipDAO> findByGroupId(Long groupId);
+    Optional<GroupMembershipDAO> findByGroupIdAndUserId(Long groupId, Long userId);
     void deleteByGroupIdAndUserId(Long groupId, Long userId);
 }

@@ -1,14 +1,20 @@
 package com.app.community.business.service.impl;
 
+import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.GroupMapper;
 import com.app.community.business.repository.GroupRepository;
+import com.app.community.business.repository.model.EventDAO;
 import com.app.community.business.repository.model.GroupDAO;
 import com.app.community.business.service.GroupService;
+import com.app.community.dto.GroupUpdateDTO;
+import com.app.community.exception.ResourceNotFoundException;
+import com.app.community.exception.UnauthorizedException;
 import com.app.community.model.Group;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,27 +24,24 @@ public class GroupServiceImpl implements GroupService {
 
     private final GroupRepository groupRepository;
     private final GroupMapper groupMapper;
-    private final UserServiceClient userServiceClient;
+    private final JwtTokenUtil jwtTokenUtil;
 
     public GroupServiceImpl(GroupRepository groupRepository,
                             GroupMapper groupMapper,
-                            UserServiceClient userServiceClient) {
+                            JwtTokenUtil jwtTokenUtil) {
         this.groupRepository = groupRepository;
         this.groupMapper = groupMapper;
-        this.userServiceClient = userServiceClient;
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
     @Override
-    public Group createGroup(Group group) {
+    public Group createGroup(Group group, String token) {
 
-        if (!userServiceClient.doesUserExist(group.getCreatorId())) {
-            throw new IllegalArgumentException("User with ID " + group.getCreatorId() + " does not exist.");
-        }
-
-        GroupDAO groupDAO = groupMapper.groupToGroupDAO(group);
-        groupDAO.setCreatedAt(java.time.LocalDateTime.now());
-        GroupDAO savedGroup = groupRepository.save(groupDAO);
-        log.info("Saving group: {}", groupDAO);
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        group.setCreatorId(userId);
+        group.setCreatedAt(LocalDateTime.now());
+        GroupDAO savedGroup = groupRepository.save(groupMapper.groupToGroupDAO(group));
+        log.info("Saving group: {}", savedGroup);
         return groupMapper.groupDAOToGroup(savedGroup);
     }
 
@@ -59,23 +62,49 @@ public class GroupServiceImpl implements GroupService {
 
     @Transactional
     @Override
-    public Group updateGroup(Long groupId, Group updatedGroup) {
-        Optional<GroupDAO> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isPresent()) {
-            GroupDAO existingGroup = groupOpt.get();
-            existingGroup.setName(updatedGroup.getName());
-            existingGroup.setDescription(updatedGroup.getDescription());
-            existingGroup.setPrivacySetting(updatedGroup.getPrivacySetting());  // Store enum as string
-            GroupDAO updatedGroupDAO = groupRepository.save(existingGroup);
-            log.info("Updating group: {}", updatedGroupDAO);
-            return groupMapper.groupDAOToGroup(updatedGroupDAO);
+    public Group updateGroup(Long groupId, GroupUpdateDTO groupUpdateDTO, String token) {
+
+        GroupDAO existingGroup = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", groupId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingGroup.getCreatorId())) {
+            log.warn("Unauthorized attempt to delete group ID {} by user ID {}", groupId, existingGroup.getCreatorId());
+            throw new UnauthorizedException("You are not authorized to delete this group");
         }
-        return null;
+
+        if (groupUpdateDTO.getName() != null) {
+            existingGroup.setName(groupUpdateDTO.getName());
+        }
+        if (groupUpdateDTO.getDescription() != null) {
+            existingGroup.setDescription(groupUpdateDTO.getDescription());
+        }
+        if (groupUpdateDTO.getPrivacySetting() != null) {
+            existingGroup.setPrivacySetting(groupUpdateDTO.getPrivacySetting());
+        }
+
+        GroupDAO updatedGroupDAO = groupRepository.save(existingGroup);
+        log.info("Updating group: {}", updatedGroupDAO);
+        return groupMapper.groupDAOToGroup(updatedGroupDAO);
     }
 
     @Override
-    public void deleteGroup(Long groupId) {
+    public void deleteGroup(Long groupId, String token) {
+        GroupDAO existingGroup = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group", groupId));
+
+        // Check if the user is authorized
+        if (!isAuthorized(token, existingGroup.getCreatorId())) {
+            log.warn("Unauthorized attempt to delete group ID {} by user ID {}", groupId, existingGroup.getCreatorId());
+            throw new UnauthorizedException("You are not authorized to delete this group");
+        }
         log.info("Deleting group with id: {}", groupId);
         groupRepository.deleteById(groupId);
+    }
+
+    private boolean isAuthorized(String token, Long userId) {
+        Long tokenUserId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        String role = jwtTokenUtil.extractRole(token.replace("Bearer ", ""));
+        return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 }

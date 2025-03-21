@@ -6,9 +6,9 @@ import java.time.LocalDateTime;
 
 public class GroupMembership {
     private Long id;
-    @NotBlank(message = "User id is required")
+
     private Long userId;
-    @NotBlank(message = "Group id is required")
+
     private Long groupId;
     @NotBlank(message = "Role id is required")
     private String role;   // 'admin', 'moderator', 'member'
