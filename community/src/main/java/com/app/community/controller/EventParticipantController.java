@@ -2,7 +2,9 @@ package com.app.community.controller;
 
 import com.app.community.business.service.EventParticipantService;
 import com.app.community.business.service.impl.UserServiceClient;
+import com.app.community.dto.EventParticipantUpdateDTO;
 import com.app.community.model.EventParticipant;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,12 +25,11 @@ public class EventParticipantController {
     }
 
     @PostMapping("/rsvp")
-    public ResponseEntity<EventParticipant> rsvpToEvent(@RequestBody EventParticipant eventParticipant) {
-        if (!userServiceClient.doesUserExist(eventParticipant.getUserId())) {
-            throw new IllegalArgumentException("User with ID " + eventParticipant.getUserId() + " does not exist");
-        }
+    public ResponseEntity<EventParticipant> rsvpToEvent(@PathVariable  Long eventId,
+                                                        @RequestBody EventParticipant eventParticipant,
+                                                        @RequestHeader("Authorization") String token) {
 
-        EventParticipant savedParticipant = eventParticipantService.rsvpToEvent(eventParticipant);
+        EventParticipant savedParticipant = eventParticipantService.rsvpToEvent(eventId, eventParticipant, token);
         log.info("RSVP to event with id: {}", eventParticipant.getEventId());
         return ResponseEntity.ok(savedParticipant);
     }
@@ -51,4 +52,17 @@ public class EventParticipantController {
         }
         return ResponseEntity.ok(participants);
     }
+
+    @PutMapping("/rsvp")
+    public ResponseEntity<EventParticipant> updateRsvpStatus(
+            @PathVariable Long eventId,
+            @RequestBody @Valid EventParticipantUpdateDTO updateDTO,
+            @RequestHeader("Authorization") String token) {
+
+        EventParticipant updatedParticipant = eventParticipantService.updateRsvpStatus(eventId, updateDTO, token);
+        log.info("Updated RSVP for event {}: {}", eventId, updateDTO.getRsvpStatus());
+
+        return ResponseEntity.ok(updatedParticipant);
+    }
+
 }

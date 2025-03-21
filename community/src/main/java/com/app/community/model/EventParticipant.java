@@ -8,9 +8,8 @@ import java.time.LocalDateTime;
 public class EventParticipant {
 
     private Long participantId;
-    @NotBlank(message = "User id is required")
     private Long userId;
-    @NotBlank(message = "Event id is required")
+
     private Long eventId;
     @NotBlank(message = "RSVP status is required")
     private String rsvpStatus;
