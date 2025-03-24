@@ -24,16 +24,13 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
 
     private final ReadingProgressRepository repository;
     private final ReadingProgressMapper mapper;
-    private final UserServiceClient userServiceClient;
     private final JwtTokenUtil jwtTokenUtil;
 
     public ReadingProgressServiceImpl(ReadingProgressRepository repository,
                                       ReadingProgressMapper mapper,
-                                      UserServiceClient userServiceClient,
                                       JwtTokenUtil jwtTokenUtil) {
         this.repository = repository;
         this.mapper = mapper;
-        this.userServiceClient = userServiceClient;
         this.jwtTokenUtil = jwtTokenUtil;
     }
 

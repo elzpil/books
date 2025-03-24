@@ -81,7 +81,7 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
-    // @PreAuthorize("hasRole('ADMIN')")
+
     @Override
     public List<User> getAllUsers() {
         log.info("Fetching all users");

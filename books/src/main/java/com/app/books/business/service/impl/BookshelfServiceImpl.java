@@ -24,14 +24,12 @@ public class BookshelfServiceImpl implements BookshelfService {
 
     private final BookshelfRepository bookshelfRepository;
     private final BookshelfMapper bookshelfMapper;
-    private final UserServiceClient userServiceClient;
     private final JwtTokenUtil jwtTokenUtil;
 
     public BookshelfServiceImpl(BookshelfRepository bookshelfRepository, BookshelfMapper bookshelfMapper,
-                                UserServiceClient userServiceClient, JwtTokenUtil jwtTokenUtil) {
+                                JwtTokenUtil jwtTokenUtil) {
         this.bookshelfRepository = bookshelfRepository;
         this.bookshelfMapper = bookshelfMapper;
-        this.userServiceClient = userServiceClient;
         this.jwtTokenUtil = jwtTokenUtil;
     }
 

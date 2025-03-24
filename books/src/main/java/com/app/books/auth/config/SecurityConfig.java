@@ -4,6 +4,7 @@ import com.app.books.auth.util.JwtAuthenticationFilter;
 import com.app.books.auth.util.JwtTokenUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -39,12 +40,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/books/exists/*").permitAll()
-                        .requestMatchers("/books").permitAll()
-                        .requestMatchers("/progress").permitAll()
-                        .requestMatchers("/bookshelf").permitAll()
-                        .requestMatchers("/review").permitAll()
-                        .requestMatchers("/books/*").permitAll()
+                        .requestMatchers("/books/exists/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/books/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/books/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/books/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/books/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class);

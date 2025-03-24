@@ -5,6 +5,7 @@ import com.app.users.business.service.UserService;
 import com.app.users.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,11 +65,13 @@ public class UserController {
         return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{userId}/role")
     public ResponseEntity<User> updateUserRole(@PathVariable Long userId, @RequestParam String role) {
         Optional<User> user = userService.updateUserRole(userId, role);

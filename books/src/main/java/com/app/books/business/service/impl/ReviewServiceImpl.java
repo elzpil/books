@@ -24,15 +24,13 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final ReviewMapper reviewMapper;
-    private final UserServiceClient userServiceClient;
 
     private final JwtTokenUtil jwtTokenUtil;
 
     public ReviewServiceImpl(ReviewRepository reviewRepository, ReviewMapper reviewMapper,
-                             UserServiceClient userServiceClient, JwtTokenUtil jwtTokenUtil) {
+                              JwtTokenUtil jwtTokenUtil) {
         this.reviewRepository = reviewRepository;
         this.reviewMapper = reviewMapper;
-        this.userServiceClient = userServiceClient;
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
