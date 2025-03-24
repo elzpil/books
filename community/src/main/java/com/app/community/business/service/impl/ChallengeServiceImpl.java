@@ -10,7 +10,6 @@ import com.app.community.exception.ResourceNotFoundException;
 import com.app.community.exception.UnauthorizedException;
 import com.app.community.model.Challenge;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.web.authentication.preauth.j2ee.J2eeBasedPreAuthenticatedWebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -123,4 +122,23 @@ public class ChallengeServiceImpl implements ChallengeService {
         String role = jwtTokenUtil.extractRole(cleanToken);
         return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
+
+    @Override
+    public List<Challenge> searchChallenges(String name, String description) {
+        log.info("Searching challenges with Name: {}, Description: {}", name, description);
+        return challengeRepository.searchChallenges(name, description)
+                .stream()
+                .map(challengeMapper::challengeDAOToChallenge)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Challenge> getChallengesSortedByPopularity() {
+        log.info("Fetching challenges sorted by popularity");
+        return challengeRepository.findChallengesSortedByPopularity()
+                .stream()
+                .map(challengeMapper::challengeDAOToChallenge)
+                .collect(Collectors.toList());
+    }
+
 }

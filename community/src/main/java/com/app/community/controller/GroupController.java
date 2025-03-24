@@ -61,4 +61,11 @@ public class GroupController {
         log.info("Deleting a group with id: {}", groupId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Group>> searchGroupsByName(@RequestParam String name) {
+        List<Group> groups = groupService.searchGroupsByName(name);
+        return ResponseEntity.ok(groups);
+    }
+
 }

@@ -59,4 +59,19 @@ public class ChallengeController {
         challengeService.deleteChallenge(challengeId, token);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Challenge>> searchChallenges(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description) {
+        List<Challenge> challenges = challengeService.searchChallenges(name, description);
+        return ResponseEntity.ok(challenges);
+    }
+
+    @GetMapping("/popular")
+    public ResponseEntity<List<Challenge>> getChallengesByPopularity() {
+        List<Challenge> challenges = challengeService.getChallengesSortedByPopularity();
+        return ResponseEntity.ok(challenges);
+    }
+
 }

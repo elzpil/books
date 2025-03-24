@@ -3,7 +3,6 @@ package com.app.community.business.service.impl;
 import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.GroupMapper;
 import com.app.community.business.repository.GroupRepository;
-import com.app.community.business.repository.model.EventDAO;
 import com.app.community.business.repository.model.GroupDAO;
 import com.app.community.business.service.GroupService;
 import com.app.community.dto.GroupUpdateDTO;
@@ -17,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -107,4 +107,13 @@ public class GroupServiceImpl implements GroupService {
         String role = jwtTokenUtil.extractRole(token.replace("Bearer ", ""));
         return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
+
+    @Override
+    public List<Group> searchGroupsByName(String name) {
+        log.info("Searching for groups with name: {}", name);
+        return groupRepository.searchGroupsByName(name).stream()
+                .map(groupMapper::groupDAOToGroup)
+                .collect(Collectors.toList());
+    }
+
 }

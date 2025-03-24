@@ -17,4 +17,6 @@ public interface GroupService {
     Group updateGroup(Long groupId, GroupUpdateDTO groupUpdateDTO, String token);
 
     void deleteGroup(Long groupId, String token);
+
+    List<Group> searchGroupsByName(String name);
 }
