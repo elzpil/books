@@ -30,7 +30,7 @@ public class EventController {
 
     @GetMapping
     public ResponseEntity<List<Event>> getAllEvents(
-            @RequestParam(required = false) Long groupId,
+            @RequestParam Long groupId,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) LocalDateTime endDate) {
         log.info("Getting all events for group: {}", groupId);

@@ -34,13 +34,17 @@ public class DiscussionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Discussion>> getDiscussions(@RequestParam(required = false) Long groupId,
-                                                           @RequestParam(required = false) Long bookId,
-                                                           @RequestParam(required = false) Long challengeId) {
-        List<Discussion> discussions = discussionService.getDiscussions(groupId, bookId, challengeId);
-        log.info("Getting discusions");
+    public ResponseEntity<List<Discussion>> getDiscussions(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(required = false) Long groupId,
+            @RequestParam(required = false) Long bookId,
+            @RequestParam(required = false) Long challengeId) {
+
+        List<Discussion> discussions = discussionService.getDiscussions(token, groupId, bookId, challengeId);
+        log.info("Getting discussions");
         return ResponseEntity.ok(discussions);
     }
+
 
     @GetMapping("/{discussionId}")
     public ResponseEntity<Discussion> getDiscussion(@PathVariable Long discussionId) {

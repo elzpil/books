@@ -60,7 +60,17 @@ public class DiscussionServiceImpl implements DiscussionService {
     }
 
     @Override
-    public List<Discussion> getDiscussions(Long groupId, Long bookId, Long challengeId) {
+    public List<Discussion> getDiscussions(String token, Long groupId, Long bookId, Long challengeId) {
+        String cleanToken = token.replace("Bearer ", "");
+        String userRole = jwtTokenUtil.extractRole(cleanToken);
+
+        // If all parameters are null, only allow access for admins
+        if (groupId == null && bookId == null && challengeId == null) {
+            if (!"ADMIN".equals(userRole)) {
+                log.warn("Unauthorized attempt to get all discussions by non-admin user");
+                throw new UnauthorizedException("Only admins can retrieve all discussions.");
+            }
+        }
         List<DiscussionDAO> discussionDAOs;
         log.info("Getting discussions");
         if (groupId != null) {

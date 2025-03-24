@@ -120,4 +120,17 @@ public class BookServiceImpl implements BookService {
     public boolean bookExists(Long bookId) {
         return bookRepository.existsById(bookId);
     }
+
+    @Override
+    public List<Book> getBooks(String genre, String author, String title) {
+        log.info("Fetching books with filters - Genre: {}, Author: {}, Title: {}", genre, author, title);
+
+        // Use the custom query that supports all filters
+        List<BookDAO> books = bookRepository.findBooksByFilters(genre, author, title);
+
+        // Convert BookDAO to Book before returning
+        return books.stream()
+                .map(bookMapper::bookDAOToBook)
+                .collect(Collectors.toList());
+    }
 }
