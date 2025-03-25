@@ -44,7 +44,9 @@ public class BookshelfServiceImpl implements BookshelfService {
             throw new IllegalStateException("This book is already in the user's bookshelf");
         }
         entry.setCreatedAt(LocalDate.now());
+        log.info(" bookshelf entry before mapper: {}", entry);
         BookshelfDAO savedEntry = bookshelfRepository.save(bookshelfMapper.bookshelfEntryToBookshelfDAO(entry));
+        log.info("Saved bookshelf entry before mapper: {}", savedEntry);
         BookshelfEntry result = bookshelfMapper.bookshelfDAOToBookshelfEntry(savedEntry);
         log.info("Saved bookshelf entry: {}", result);
         return result;
