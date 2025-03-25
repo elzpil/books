@@ -24,15 +24,16 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @PostMapping
-    public ResponseEntity<Book> addBook(@Valid @RequestBody Book book) {
+    public ResponseEntity<Book> addBook(@Valid @RequestBody Book book,
+                                        @RequestHeader("Authorization") String token) {
         log.info("Adding a new book");
-        Book savedBook = bookService.saveBook(book);
+        Book savedBook = bookService.saveBook(book, token);
         return ResponseEntity.ok(savedBook);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+
     @GetMapping
     public ResponseEntity<List<Book>> getBooks(@RequestParam(required = false) String genre,
                                                @RequestParam(required = false) String author,
@@ -42,7 +43,7 @@ public class BookController {
         return ResponseEntity.ok(books);
     }
 
-    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+
     @GetMapping("/{bookId}")
     public ResponseEntity<Book> getBookById(@PathVariable Long bookId) {
         log.info("Fetching book by ID: {}", bookId);
@@ -51,19 +52,21 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{bookId}")
-    public ResponseEntity<Book> updateBook(@PathVariable Long bookId, @Valid @RequestBody BookUpdateDTO bookUpdateDTO) {
+    public ResponseEntity<Book> updateBook(@PathVariable Long bookId, @Valid @RequestBody BookUpdateDTO bookUpdateDTO,
+                                           @RequestHeader("Authorization") String token) {
         log.info("Updating book with ID: {}", bookId);
-        Book updatedBook = bookService.updateBook(bookId, bookUpdateDTO);
+        Book updatedBook = bookService.updateBook(bookId, bookUpdateDTO, token);
         return ResponseEntity.ok(updatedBook);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/{bookId}")
-    public ResponseEntity<Void> deleteBook(@PathVariable Long bookId) {
+    public ResponseEntity<Void> deleteBook(@PathVariable Long bookId,
+                                           @RequestHeader("Authorization") String token) {
         log.info("Deleting book with ID: {}", bookId);
-        bookService.deleteBook(bookId);
+        bookService.deleteBook(bookId, token);
         return ResponseEntity.noContent().build();
     }
 }

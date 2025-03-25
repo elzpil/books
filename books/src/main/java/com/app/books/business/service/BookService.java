@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BookService {
-    Book saveBook(Book book);
+    Book saveBook(Book book, String token);
     List<Book> getAllBooks(Pageable pageable);
     Optional<Book> getBookById(Long bookId);
-    Book updateBook(Long bookId, BookUpdateDTO bookUpdateDTO);
-    void deleteBook(Long bookId);
+    Book updateBook(Long bookId, BookUpdateDTO bookUpdateDTO, String token);
+    void deleteBook(Long bookId, String token);
     List<Book> getBooks(String genre, String author, String title);
     boolean bookExists(Long bookId);
 

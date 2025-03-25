@@ -48,7 +48,7 @@ public class JwtTokenUtil {
     public boolean validateToken(String token, String username) {
         if (username == null) {
             log.error("Token validation failed: extracted username is null");
-            return false;  // Prevents NullPointerException
+            return false;
         }
 
         final String extractedUsername = extractUsername(token);
