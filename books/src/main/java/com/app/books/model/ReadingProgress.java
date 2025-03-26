@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
-@Data
+
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReadingProgress {
@@ -24,4 +24,44 @@ public class ReadingProgress {
     private Integer percentageRead;
 
     private LocalDateTime lastUpdated = LocalDateTime.now();
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public Long getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(Long bookId) {
+        this.bookId = bookId;
+    }
+
+    public Integer getPercentageRead() {
+        return percentageRead;
+    }
+
+    public void setPercentageRead(Integer percentageRead) {
+        this.percentageRead = percentageRead;
+    }
+
+    public LocalDateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(LocalDateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
 }

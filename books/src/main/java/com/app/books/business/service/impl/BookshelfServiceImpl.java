@@ -36,17 +36,17 @@ public class BookshelfServiceImpl implements BookshelfService {
     @Override
     public BookshelfEntry addToBookshelf(BookshelfEntry entry, String token) {
         log.info("Saving book {} to user's bookshelf", entry.getBookId());
-
         Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
         entry.setUserId(userId);
         Optional<BookshelfDAO> existingEntry = bookshelfRepository.findByUserIdAndBookId(entry.getUserId(), entry.getBookId());
+
         if (existingEntry.isPresent()) {
-            throw new IllegalStateException("This book is already in the user's bookshelf");
+            throw new IllegalStateException("This book is already in the user's bookshelf"); // TODO change to update
         }
         entry.setCreatedAt(LocalDate.now());
         log.info(" bookshelf entry before mapper: {}", entry);
         BookshelfDAO savedEntry = bookshelfRepository.save(bookshelfMapper.bookshelfEntryToBookshelfDAO(entry));
-        log.info("Saved bookshelf entry before mapper: {}", savedEntry);
+        log.info("Saved bookshelf entry after mapper: {}", savedEntry);
         BookshelfEntry result = bookshelfMapper.bookshelfDAOToBookshelfEntry(savedEntry);
         log.info("Saved bookshelf entry: {}", result);
         return result;
