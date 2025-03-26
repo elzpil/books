@@ -44,4 +44,6 @@ public class Event {
     public void setUserId(Long userId) {
         this.userId = userId;
     }
+
+
 }
