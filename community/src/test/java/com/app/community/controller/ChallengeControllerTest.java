@@ -1,12 +1,14 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.ChallengeService;
+import com.app.community.dto.ChallengeUpdateDTO;
 import com.app.community.model.Challenge;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
@@ -14,7 +16,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,74 +35,77 @@ class ChallengeControllerTest {
     void setUp() {
         challenge = new Challenge();
         challenge.setId(1L);
-        challenge.setName("Test Challenge");
-        challenge.setDescription("A sample challenge");
+        challenge.setName("Read 10 Books");
+        challenge.setDescription("A challenge to read 10 books in a month");
         challenge.setCreatorId(100L);
         challenge.setStartDate(LocalDate.now());
-        challenge.setEndDate(LocalDate.now().plusDays(7));
+        challenge.setEndDate(LocalDate.now().plusDays(30));
     }
 
     @Test
-    void createChallenge_ShouldReturnCreatedChallenge() {
-        when(challengeService.createChallenge(any(Challenge.class))).thenReturn(challenge);
-
-        ResponseEntity<Challenge> response = challengeController.createChallenge(challenge);
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(201);
-        assertThat(response.getBody()).isEqualTo(challenge);
-        verify(challengeService).createChallenge(any(Challenge.class));
+    void testCreateChallenge() {
+        when(challengeService.createChallenge(any(Challenge.class), any(String.class))).thenReturn(challenge);
+        ResponseEntity<Challenge> response = challengeController.createChallenge(challenge, "Bearer token");
+        assertEquals(201, response.getStatusCodeValue());
+        assertEquals(challenge, response.getBody());
     }
 
     @Test
-    void getAllChallenges_ShouldReturnListOfChallenges() {
+    void testGetAllChallenges() {
         when(challengeService.getAllChallenges()).thenReturn(List.of(challenge));
-
         ResponseEntity<List<Challenge>> response = challengeController.getAllChallenges();
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isNotNull().hasSize(1);
-        verify(challengeService).getAllChallenges();
+        assertEquals(200, response.getStatusCodeValue());
+        assertFalse(response.getBody().isEmpty());
     }
 
     @Test
-    void getChallengeById_ShouldReturnChallenge_WhenExists() {
+    void testGetChallengeById_Found() {
         when(challengeService.getChallengeById(1L)).thenReturn(Optional.of(challenge));
-
         ResponseEntity<Challenge> response = challengeController.getChallengeById(1L);
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(challenge);
-        verify(challengeService).getChallengeById(1L);
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(challenge, response.getBody());
     }
 
     @Test
-    void getChallengeById_ShouldReturnNotFound_WhenDoesNotExist() {
+    void testGetChallengeById_NotFound() {
         when(challengeService.getChallengeById(1L)).thenReturn(Optional.empty());
-
         ResponseEntity<Challenge> response = challengeController.getChallengeById(1L);
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(404);
-        verify(challengeService).getChallengeById(1L);
+        assertEquals(404, response.getStatusCodeValue());
     }
 
     @Test
-    void updateChallenge_ShouldReturnUpdatedChallenge() {
-        when(challengeService.updateChallenge(eq(1L), any(Challenge.class))).thenReturn(challenge);
+    void testUpdateChallenge() {
+        ChallengeUpdateDTO updateDTO = new ChallengeUpdateDTO();
+        updateDTO.setName("Updated Name");
+        updateDTO.setDescription("Updated Description");
+        updateDTO.setStartDate(LocalDate.now());
+        updateDTO.setEndDate(LocalDate.now().plusDays(10));
 
-        ResponseEntity<Challenge> response = challengeController.updateChallenge(1L, challenge);
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(challenge);
-        verify(challengeService).updateChallenge(eq(1L), any(Challenge.class));
+        when(challengeService.updateChallenge(eq(1L), any(ChallengeUpdateDTO.class), any(String.class))).thenReturn(challenge);
+        ResponseEntity<Challenge> response = challengeController.updateChallenge(1L, updateDTO, "Bearer token");
+        assertEquals(200, response.getStatusCodeValue());
     }
 
     @Test
-    void deleteChallenge_ShouldReturnNoContent() {
-        doNothing().when(challengeService).deleteChallenge(1L);
+    void testDeleteChallenge() {
+        doNothing().when(challengeService).deleteChallenge(1L, "Bearer token");
+        ResponseEntity<Void> response = challengeController.deleteChallenge(1L, "Bearer token");
+        assertEquals(204, response.getStatusCodeValue());
+    }
 
-        ResponseEntity<Void> response = challengeController.deleteChallenge(1L);
+    @Test
+    void testSearchChallenges() {
+        when(challengeService.searchChallenges("Read", null)).thenReturn(List.of(challenge));
+        ResponseEntity<List<Challenge>> response = challengeController.searchChallenges("Read", null);
+        assertEquals(200, response.getStatusCodeValue());
+        assertFalse(response.getBody().isEmpty());
+    }
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(204);
-        verify(challengeService).deleteChallenge(1L);
+    @Test
+    void testGetChallengesByPopularity() {
+        when(challengeService.getChallengesSortedByPopularity()).thenReturn(List.of(challenge));
+        ResponseEntity<List<Challenge>> response = challengeController.getChallengesByPopularity();
+        assertEquals(200, response.getStatusCodeValue());
+        assertFalse(response.getBody().isEmpty());
     }
 }

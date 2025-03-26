@@ -2,21 +2,20 @@ package com.app.community.controller;
 
 import com.app.community.business.service.CommentService;
 import com.app.community.model.Comment;
+import com.app.community.dto.CommentUpdateDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class CommentControllerTest {
 
     @Mock
@@ -25,47 +24,68 @@ class CommentControllerTest {
     @InjectMocks
     private CommentController commentController;
 
-    private Comment comment;
-
     @BeforeEach
     void setUp() {
-        comment = new Comment();
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testAddComment() {
+        String token = "Bearer token";
+
+        Comment comment = new Comment();
         comment.setCommentId(1L);
-        comment.setDiscussionId(10L);
+        comment.setDiscussionId(1L);
         comment.setUserId(100L);
         comment.setContent("This is a test comment.");
         comment.setCreatedAt(LocalDateTime.now());
+
+        when(commentService.addComment(any(Comment.class), eq(token))).thenReturn(comment);
+
+        ResponseEntity<Comment> response = commentController.addComment(comment, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(comment, response.getBody());
+        verify(commentService, times(1)).addComment(any(Comment.class), eq(token));
     }
 
     @Test
-    void addComment_ShouldReturnComment() {
-        when(commentService.addComment(10L, 100L, "This is a test comment.")).thenReturn(comment);
+    void testGetComments() {
+        Long discussionId = 1L;
 
-        ResponseEntity<Comment> response = commentController.addComment(10L, 100L, "This is a test comment.");
+        Comment comment1 = new Comment();
+        comment1.setCommentId(1L);
+        comment1.setDiscussionId(discussionId);
+        comment1.setUserId(100L);
+        comment1.setContent("First comment");
+        comment1.setCreatedAt(LocalDateTime.now());
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(comment);
-        verify(commentService).addComment(10L, 100L, "This is a test comment.");
+        Comment comment2 = new Comment();
+        comment2.setCommentId(2L);
+        comment2.setDiscussionId(discussionId);
+        comment2.setUserId(101L);
+        comment2.setContent("Second comment");
+        comment2.setCreatedAt(LocalDateTime.now());
+
+        when(commentService.getComments(discussionId)).thenReturn(List.of(comment1, comment2));
+
+        ResponseEntity<List<Comment>> response = commentController.getComments(discussionId);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(2, response.getBody().size());
+        verify(commentService, times(1)).getComments(discussionId);
     }
 
     @Test
-    void getComments_ShouldReturnListOfComments() {
-        when(commentService.getComments(10L)).thenReturn(List.of(comment));
+    void testDeleteComment() {
+        Long commentId = 1L;
+        String token = "Bearer token";
 
-        ResponseEntity<List<Comment>> response = commentController.getComments(10L);
+        doNothing().when(commentService).deleteComment(commentId, token);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isNotNull().hasSize(1);
-        verify(commentService).getComments(10L);
-    }
+        ResponseEntity<Void> response = commentController.deleteComment(commentId, token);
 
-    @Test
-    void deleteComment_ShouldReturnNoContent() {
-        doNothing().when(commentService).deleteComment(1L);
-
-        ResponseEntity<Void> response = commentController.deleteComment(1L);
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(204);
-        verify(commentService).deleteComment(1L);
+        assertEquals(204, response.getStatusCodeValue());
+        verify(commentService, times(1)).deleteComment(commentId, token);
     }
 }

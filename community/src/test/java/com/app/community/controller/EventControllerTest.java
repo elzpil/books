@@ -1,132 +1,125 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.EventService;
+import com.app.community.dto.EventUpdateDTO;
 import com.app.community.model.Event;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(EventController.class)
 class EventControllerTest {
 
-    @Autowired
-    private MockMvc mockMvc;
-
-    @MockBean
+    @Mock
     private EventService eventService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @InjectMocks
+    private EventController eventController;
 
-    @Test
-    void testCreateEvent() throws Exception {
-        Event event = new Event();
+    private Event event;
+    private EventUpdateDTO eventUpdateDTO;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        event = new Event();
         event.setEventId(1L);
-        event.setGroupId(2L);
-        event.setName("Book Club Meeting");
-        event.setDescription("Discussing the latest book");
-        event.setEventDate(LocalDateTime.now().plusDays(5));
+        event.setGroupId(1L);
+        event.setUserId(100L);
+        event.setName("Test Event");
+        event.setDescription("Test description for the event");
+        event.setEventDate(LocalDateTime.now().plusDays(1));
         event.setCreatedAt(LocalDateTime.now());
 
-        when(eventService.createEvent(any(Event.class))).thenReturn(event);
-
-        mockMvc.perform(post("/events")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(event)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventId").value(1L))
-                .andExpect(jsonPath("$.name").value("Book Club Meeting"));
+        eventUpdateDTO = new EventUpdateDTO();
+        eventUpdateDTO.setName("Updated Event");
+        eventUpdateDTO.setDescription("Updated description for the event");
+        eventUpdateDTO.setEventDate(LocalDateTime.now().plusDays(2));
     }
 
     @Test
-    void testGetAllEvents() throws Exception {
+    void testCreateEvent() {
+        String token = "Bearer token";
+
+        when(eventService.createEvent(any(Event.class), eq(token))).thenReturn(event);
+
+        ResponseEntity<Event> response = eventController.createEvent(event, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(event, response.getBody());
+        verify(eventService, times(1)).createEvent(any(Event.class), eq(token));
+    }
+
+    @Test
+    void testGetAllEvents() {
+        Long groupId = 1L;
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime endDate = LocalDateTime.now().plusDays(7);
+
         Event event1 = new Event();
         event1.setEventId(1L);
-        event1.setGroupId(2L);
-        event1.setName("Event One");
-        event1.setDescription("Description One");
-        event1.setEventDate(LocalDateTime.now().plusDays(5));
-        event1.setCreatedAt(LocalDateTime.now());
+        event1.setName("Event 1");
 
         Event event2 = new Event();
         event2.setEventId(2L);
-        event2.setGroupId(2L);
-        event2.setName("Event Two");
-        event2.setDescription("Description Two");
-        event2.setEventDate(LocalDateTime.now().plusDays(10));
-        event2.setCreatedAt(LocalDateTime.now());
+        event2.setName("Event 2");
 
-        List<Event> eventList = Arrays.asList(event1, event2);
-        when(eventService.getAllEvents(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(eventList);
+        when(eventService.getAllEvents(eq(groupId), eq(startDate), eq(endDate)))
+                .thenReturn(List.of(event1, event2));
 
-        mockMvc.perform(get("/events"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].name").value("Event One"))
-                .andExpect(jsonPath("$[1].name").value("Event Two"));
+        ResponseEntity<List<Event>> response = eventController.getAllEvents(groupId, startDate, endDate);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(2, response.getBody().size());
+        verify(eventService, times(1)).getAllEvents(eq(groupId), eq(startDate), eq(endDate));
     }
 
     @Test
-    void testGetEventById() throws Exception {
-        Event event = new Event();
-        event.setEventId(1L);
-        event.setGroupId(2L);
-        event.setName("Event Test");
-        event.setDescription("Test Description");
-        event.setEventDate(LocalDateTime.now().plusDays(5));
-        event.setCreatedAt(LocalDateTime.now());
+    void testGetEventById() {
+        Long eventId = 1L;
 
-        when(eventService.getEventById(1L)).thenReturn(event);
+        when(eventService.getEventById(eventId)).thenReturn(event);
 
-        mockMvc.perform(get("/events/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventId").value(1L))
-                .andExpect(jsonPath("$.name").value("Event Test"));
+        ResponseEntity<Event> response = eventController.getEventById(eventId);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(event, response.getBody());
+        verify(eventService, times(1)).getEventById(eventId);
     }
 
     @Test
-    void testUpdateEvent() throws Exception {
-        Event updatedEvent = new Event();
-        updatedEvent.setEventId(1L);
-        updatedEvent.setGroupId(2L);
-        updatedEvent.setName("Updated Event");
-        updatedEvent.setDescription("Updated Description");
-        updatedEvent.setEventDate(LocalDateTime.now().plusDays(5));
-        updatedEvent.setCreatedAt(LocalDateTime.now());
+    void testUpdateEvent() {
+        Long eventId = 1L;
+        String token = "Bearer token";
 
-        when(eventService.updateEvent(Mockito.eq(1L), any(Event.class))).thenReturn(updatedEvent);
+        when(eventService.updateEvent(eq(eventId), any(EventUpdateDTO.class), eq(token))).thenReturn(event);
 
-        mockMvc.perform(put("/events/1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updatedEvent)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.name").value("Updated Event"));
+        ResponseEntity<Event> response = eventController.updateEvent(eventId, eventUpdateDTO, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(event, response.getBody());
+        verify(eventService, times(1)).updateEvent(eq(eventId), any(EventUpdateDTO.class), eq(token));
     }
 
     @Test
-    void testDeleteEvent() throws Exception {
-        mockMvc.perform(delete("/events/1"))
-                .andExpect(status().isNoContent());
+    void testDeleteEvent() {
+        Long eventId = 1L;
+        String token = "Bearer token";
 
-        Mockito.verify(eventService).deleteEvent(1L);
+        doNothing().when(eventService).deleteEvent(eventId, token);
+
+        ResponseEntity<Void> response = eventController.deleteEvent(eventId, token);
+
+        assertEquals(204, response.getStatusCodeValue());
+        verify(eventService, times(1)).deleteEvent(eventId, token);
     }
 }

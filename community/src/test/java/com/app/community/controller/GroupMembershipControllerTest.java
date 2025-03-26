@@ -1,22 +1,23 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.GroupMembershipService;
+import com.app.community.dto.GroupMembershipUpdateDTO;
 import com.app.community.model.GroupMembership;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(MockitoExtension.class)
 class GroupMembershipControllerTest {
 
     @Mock
@@ -25,47 +26,82 @@ class GroupMembershipControllerTest {
     @InjectMocks
     private GroupMembershipController groupMembershipController;
 
-    private GroupMembership membership;
+    private GroupMembership groupMembership;
+    private GroupMembershipUpdateDTO groupMembershipUpdateDTO;
 
     @BeforeEach
     void setUp() {
-        membership = new GroupMembership();
-        membership.setId(1L);
-        membership.setUserId(100L);
-        membership.setGroupId(10L);
-        membership.setRole("member");
-        membership.setJoinedAt(LocalDateTime.now());
+        MockitoAnnotations.openMocks(this);
+
+        groupMembership = new GroupMembership();
+        groupMembership.setId(1L);
+        groupMembership.setUserId(100L);
+        groupMembership.setGroupId(1L);
+        groupMembership.setRole("member");
+        groupMembership.setJoinedAt(LocalDateTime.now());
+
+        groupMembershipUpdateDTO = new GroupMembershipUpdateDTO();
+        groupMembershipUpdateDTO.setRole("admin");
     }
 
     @Test
-    void joinGroup_ShouldReturnMembership() {
-        when(groupMembershipService.joinGroup(10L, 100L, "member")).thenReturn(membership);
+    void testJoinGroup() {
+        String token = "Bearer token";
+        when(groupMembershipService.joinGroup(eq(1L), any(GroupMembership.class), eq(token))).thenReturn(groupMembership);
 
-        ResponseEntity<GroupMembership> response = groupMembershipController.joinGroup(10L, 100L, "member");
+        ResponseEntity<GroupMembership> response = groupMembershipController.joinGroup(1L, groupMembership, token);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(membership);
-        verify(groupMembershipService).joinGroup(10L, 100L, "member");
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(groupMembership, response.getBody());
+        verify(groupMembershipService, times(1)).joinGroup(eq(1L), any(GroupMembership.class), eq(token));
     }
 
     @Test
-    void leaveGroup_ShouldReturnNoContent() {
-        doNothing().when(groupMembershipService).leaveGroup(10L, 100L);
+    void testLeaveGroup() {
+        String token = "Bearer token";
+        doNothing().when(groupMembershipService).leaveGroup(eq(1L), eq(token));
 
-        ResponseEntity<Void> response = groupMembershipController.leaveGroup(10L, 100L);
+        ResponseEntity<Void> response = groupMembershipController.leaveGroup(1L, token);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(204);
-        verify(groupMembershipService).leaveGroup(10L, 100L);
+        assertEquals(204, response.getStatusCodeValue());
+        verify(groupMembershipService, times(1)).leaveGroup(eq(1L), eq(token));
     }
 
     @Test
-    void getGroupMembers_ShouldReturnListOfMembers() {
-        when(groupMembershipService.getGroupMembers(10L)).thenReturn(List.of(membership));
+    void testGetGroupMembers() {
+        List<GroupMembership> members = List.of(groupMembership);
+        when(groupMembershipService.getGroupMembers(eq(1L))).thenReturn(members);
 
-        ResponseEntity<List<GroupMembership>> response = groupMembershipController.getGroupMembers(10L);
+        ResponseEntity<List<GroupMembership>> response = groupMembershipController.getGroupMembers(1L);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isNotNull().hasSize(1);
-        verify(groupMembershipService).getGroupMembers(10L);
+        assertEquals(200, response.getStatusCodeValue());
+        assertFalse(response.getBody().isEmpty());
+        assertEquals(1, response.getBody().size());
+        assertEquals(groupMembership, response.getBody().get(0));
+        verify(groupMembershipService, times(1)).getGroupMembers(eq(1L));
+    }
+
+    @Test
+    void testUpdateGroupMembership() {
+        String token = "Bearer token";
+        when(groupMembershipService.updateGroupMembership(eq(1L), any(GroupMembershipUpdateDTO.class), eq(token)))
+                .thenReturn(groupMembership);
+
+        ResponseEntity<GroupMembership> response = groupMembershipController.updateGroupMembership(1L, groupMembershipUpdateDTO, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        verify(groupMembershipService, times(1)).updateGroupMembership(eq(1L), any(GroupMembershipUpdateDTO.class), eq(token));
+    }
+
+    @Test
+    void testUpdateGroupMembershipNotFound() {
+        String token = "Bearer token";
+        when(groupMembershipService.updateGroupMembership(eq(1L), any(GroupMembershipUpdateDTO.class), eq(token)))
+                .thenReturn(null);
+
+        ResponseEntity<GroupMembership> response = groupMembershipController.updateGroupMembership(1L, groupMembershipUpdateDTO, token);
+
+        assertEquals(404, response.getStatusCodeValue());
+        verify(groupMembershipService, times(1)).updateGroupMembership(eq(1L), any(GroupMembershipUpdateDTO.class), eq(token));
     }
 }

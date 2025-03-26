@@ -1,22 +1,21 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.ChallengeParticipantService;
+import com.app.community.dto.ChallengeParticipantUpdateDTO;
 import com.app.community.model.ChallengeParticipant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class ChallengeParticipantControllerTest {
 
     @Mock
@@ -25,59 +24,92 @@ class ChallengeParticipantControllerTest {
     @InjectMocks
     private ChallengeParticipantController participantController;
 
-    private ChallengeParticipant participant;
-
     @BeforeEach
     void setUp() {
-        participant = new ChallengeParticipant();
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testJoinChallenge() {
+        Long challengeId = 1L;
+        String token = "Bearer token";
+
+        ChallengeParticipant participant = new ChallengeParticipant();
         participant.setParticipantId(1L);
         participant.setUserId(100L);
-        participant.setChallengeId(200L);
-        participant.setProgress(50);
+        participant.setChallengeId(challengeId);
+        participant.setProgress(0);
         participant.setCompleted(false);
         participant.setJoinedAt(LocalDateTime.now());
+
+        when(participantService.joinChallenge(challengeId, token)).thenReturn(participant);
+
+        ResponseEntity<ChallengeParticipant> response = participantController.joinChallenge(challengeId, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(participant, response.getBody());
+        verify(participantService, times(1)).joinChallenge(challengeId, token);
     }
 
     @Test
-    void joinChallenge_ShouldReturnParticipant() {
-        when(participantService.joinChallenge(200L, 100L)).thenReturn(participant);
+    void testGetParticipants() {
+        Long challengeId = 1L;
 
-        ResponseEntity<ChallengeParticipant> response = participantController.joinChallenge(200L, 100L);
+        ChallengeParticipant participant1 = new ChallengeParticipant();
+        participant1.setParticipantId(1L);
+        participant1.setUserId(100L);
+        participant1.setChallengeId(challengeId);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(participant);
-        verify(participantService).joinChallenge(200L, 100L);
+        ChallengeParticipant participant2 = new ChallengeParticipant();
+        participant2.setParticipantId(2L);
+        participant2.setUserId(101L);
+        participant2.setChallengeId(challengeId);
+
+        when(participantService.getParticipants(challengeId)).thenReturn(List.of(participant1, participant2));
+
+        ResponseEntity<List<ChallengeParticipant>> response = participantController.getParticipants(challengeId);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(2, response.getBody().size());
+        verify(participantService, times(1)).getParticipants(challengeId);
     }
 
     @Test
-    void getParticipants_ShouldReturnListOfParticipants() {
-        when(participantService.getParticipants(200L)).thenReturn(List.of(participant));
+    void testUpdateProgress() {
+        Long challengeId = 1L;
+        String token = "Bearer token";
 
-        ResponseEntity<List<ChallengeParticipant>> response = participantController.getParticipants(200L);
+        ChallengeParticipantUpdateDTO updateDTO = new ChallengeParticipantUpdateDTO();
+        updateDTO.setProgress(50);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isNotNull().hasSize(1);
-        verify(participantService).getParticipants(200L);
+
+        ChallengeParticipant updatedParticipant = new ChallengeParticipant();
+        updatedParticipant.setParticipantId(1L);
+        updatedParticipant.setUserId(100L);
+        updatedParticipant.setChallengeId(challengeId);
+        updatedParticipant.setProgress(updateDTO.getProgress());
+
+
+        when(participantService.updateProgress(eq(challengeId), any(ChallengeParticipantUpdateDTO.class), eq(token)))
+                .thenReturn(updatedParticipant);
+
+        ResponseEntity<ChallengeParticipant> response = participantController.updateProgress(challengeId, updateDTO, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(50, response.getBody().getProgress());
+        verify(participantService, times(1)).updateProgress(eq(challengeId), any(ChallengeParticipantUpdateDTO.class), eq(token));
     }
 
     @Test
-    void updateProgress_ShouldReturnUpdatedParticipant() {
-        when(participantService.updateProgress(200L, 100L, 80)).thenReturn(participant);
+    void testLeaveChallenge() {
+        Long challengeId = 1L;
+        String token = "Bearer token";
 
-        ResponseEntity<ChallengeParticipant> response = participantController.updateProgress(200L, 100L, 80);
+        doNothing().when(participantService).leaveChallenge(challengeId, token);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(participant);
-        verify(participantService).updateProgress(200L, 100L, 80);
-    }
+        ResponseEntity<Void> response = participantController.leaveChallenge(challengeId, token);
 
-    @Test
-    void leaveChallenge_ShouldReturnNoContent() {
-        doNothing().when(participantService).leaveChallenge(200L, 100L);
-
-        ResponseEntity<Void> response = participantController.leaveChallenge(200L, 100L);
-
-        assertThat(response.getStatusCodeValue()).isEqualTo(204);
-        verify(participantService).leaveChallenge(200L, 100L);
+        assertEquals(204, response.getStatusCodeValue());
+        verify(participantService, times(1)).leaveChallenge(challengeId, token);
     }
 }

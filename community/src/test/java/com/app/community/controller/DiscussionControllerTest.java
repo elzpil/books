@@ -1,102 +1,128 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.DiscussionService;
+import com.app.community.business.service.impl.UserServiceClient;
 import com.app.community.model.Discussion;
+import com.app.community.dto.DiscussionUpdateDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class DiscussionControllerTest {
 
     @Mock
     private DiscussionService discussionService;
 
+    @Mock
+    private UserServiceClient userServiceClient;
+
     @InjectMocks
     private DiscussionController discussionController;
 
     private Discussion discussion;
+    private DiscussionUpdateDTO discussionUpdateDTO;
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.openMocks(this);
+
         discussion = new Discussion();
         discussion.setDiscussionId(1L);
+        discussion.setBookId(1L);
+        discussion.setGroupId(1L);
+        discussion.setChallengeId(1L);
         discussion.setUserId(100L);
         discussion.setTitle("Test Discussion");
-        discussion.setContent("This is a test discussion.");
+        discussion.setContent("Test content for the discussion");
         discussion.setCreatedAt(LocalDateTime.now());
+
+        discussionUpdateDTO = new DiscussionUpdateDTO();
+        discussionUpdateDTO.setBookId(1L);
+        discussionUpdateDTO.setGroupId(1L);
+        discussionUpdateDTO.setChallengeId(1L);
+        discussionUpdateDTO.setTitle("Updated Test Discussion");
+        discussionUpdateDTO.setContent("Updated content for the discussion");
     }
 
     @Test
-    void createDiscussion_ShouldReturnDiscussion() {
-        when(discussionService.createDiscussion(null, null, null, 100L, "Test Discussion", "This is a test discussion."))
-                .thenReturn(discussion);
+    void testCreateDiscussion() {
+        String token = "Bearer token";
 
-        ResponseEntity<Discussion> response = discussionController.createDiscussion(new Discussion(null, null, null, 100L, "Test Discussion", "This is a test discussion."));
+        when(discussionService.createDiscussion(any(Discussion.class), eq(token))).thenReturn(discussion);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(discussion);
-        verify(discussionService).createDiscussion(null, null, null, 100L, "Test Discussion", "This is a test discussion.");
+        ResponseEntity<Discussion> response = discussionController.createDiscussion(discussion, token);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(discussion, response.getBody());
+        verify(discussionService, times(1)).createDiscussion(any(Discussion.class), eq(token));
     }
 
     @Test
-    void getDiscussions_ShouldReturnListOfDiscussions() {
-        when(discussionService.getDiscussions(null, null, null)).thenReturn(List.of(discussion));
+    void testGetDiscussions() {
+        String token = "Bearer token";
 
-        ResponseEntity<List<Discussion>> response = discussionController.getDiscussions(null, null, null);
+        Discussion discussion1 = new Discussion();
+        discussion1.setDiscussionId(1L);
+        discussion1.setTitle("Test Discussion 1");
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isNotNull().hasSize(1);
-        verify(discussionService).getDiscussions(null, null, null);
+        Discussion discussion2 = new Discussion();
+        discussion2.setDiscussionId(2L);
+        discussion2.setTitle("Test Discussion 2");
+
+        when(discussionService.getDiscussions(eq(token), anyLong(), anyLong(), anyLong())).thenReturn(List.of(discussion1, discussion2));
+
+        ResponseEntity<List<Discussion>> response = discussionController.getDiscussions(token, null, null, null);
+
+        assertEquals(200, response.getStatusCodeValue());
+        verify(discussionService, times(1)).getDiscussions(eq(token), eq(null), eq(null), eq(null));
     }
 
     @Test
-    void getDiscussion_ShouldReturnDiscussion() {
-        when(discussionService.getDiscussion(1L)).thenReturn(discussion);
+    void testGetDiscussion() {
+        Long discussionId = 1L;
 
-        ResponseEntity<Discussion> response = discussionController.getDiscussion(1L);
+        when(discussionService.getDiscussion(discussionId)).thenReturn(discussion);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(discussion);
-        verify(discussionService).getDiscussion(1L);
+        ResponseEntity<Discussion> response = discussionController.getDiscussion(discussionId);
+
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(discussion, response.getBody());
+        verify(discussionService, times(1)).getDiscussion(discussionId);
     }
 
     @Test
-    void updateDiscussion_ShouldReturnUpdatedDiscussion() {
-        Discussion updatedDiscussion = new Discussion();
-        updatedDiscussion.setDiscussionId(1L);
-        updatedDiscussion.setUserId(100L);
-        updatedDiscussion.setTitle("Updated Title");
-        updatedDiscussion.setContent("Updated Content");
-        updatedDiscussion.setCreatedAt(LocalDateTime.now());
+    void testUpdateDiscussion() {
+        Long discussionId = 1L;
+        String token = "Bearer token";
 
-        when(discussionService.updateDiscussion(1L, "Updated Title", "Updated Content"))
-                .thenReturn(updatedDiscussion);
+        when(discussionService.updateDiscussion(eq(discussionId), any(DiscussionUpdateDTO.class), eq(token))).thenReturn(discussion);
 
-        ResponseEntity<Discussion> response = discussionController.updateDiscussion(1L, "Updated Title", "Updated Content");
+        ResponseEntity<Discussion> response = discussionController.updateDiscussion(discussionId, discussionUpdateDTO, token);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(updatedDiscussion);
-        verify(discussionService).updateDiscussion(1L, "Updated Title", "Updated Content");
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(discussion, response.getBody());
+        verify(discussionService, times(1)).updateDiscussion(eq(discussionId), any(DiscussionUpdateDTO.class), eq(token));
     }
 
     @Test
-    void deleteDiscussion_ShouldReturnNoContent() {
-        doNothing().when(discussionService).deleteDiscussion(1L);
+    void testDeleteDiscussion() {
+        Long discussionId = 1L;
+        String token = "Bearer token";
 
-        ResponseEntity<Void> response = discussionController.deleteDiscussion(1L);
+        doNothing().when(discussionService).deleteDiscussion(discussionId, token);
 
-        assertThat(response.getStatusCodeValue()).isEqualTo(204);
-        verify(discussionService).deleteDiscussion(1L);
+        ResponseEntity<Void> response = discussionController.deleteDiscussion(discussionId, token);
+
+        assertEquals(204, response.getStatusCodeValue());
+        verify(discussionService, times(1)).deleteDiscussion(discussionId, token);
     }
 }
