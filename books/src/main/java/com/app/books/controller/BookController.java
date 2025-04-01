@@ -69,5 +69,12 @@ public class BookController {
         bookService.deleteBook(bookId, token);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/exists/{bookId}")
+    public ResponseEntity<Boolean> checkBookExists(@PathVariable Long bookId) {
+        log.info("Checking if book with ID {} exists", bookId);
+        boolean exists = bookService.bookExists(bookId);
+        return ResponseEntity.ok(exists);
+    }
 }
 
