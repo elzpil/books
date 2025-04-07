@@ -13,4 +13,5 @@ public interface BookshelfService {
     Optional<BookshelfEntry> getBookshelfEntry(Long bookshelfId);
     BookshelfEntry updateReadingStatus(Long bookshelfId, BookshelfUpdateDTO bookshelfUpdateDTO, String token);
     void removeFromBookshelf(Long bookshelfId, String token);
+    Optional<BookshelfEntry> getBookshelfByBookIdAndUserId(Long userId, Long bookId);
 }

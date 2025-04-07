@@ -84,4 +84,17 @@ public class BookshelfController {
         log.info("Bookshelf entry {} removed successfully", bookshelfId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/book/{bookId}/user/{userId}")
+    public ResponseEntity<BookshelfEntry> getBookshelfByBookIdAndUserId(
+            @PathVariable Long bookId, @PathVariable Long userId) {
+        log.info("Fetching bookshelf entry for user {} and bookId {}", userId, bookId);
+        Optional<BookshelfEntry> entry = bookshelfService.getBookshelfByBookIdAndUserId(userId, bookId);
+        return entry.map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    log.warn("Bookshelf entry for bookId {} and userId {} not found", bookId, userId);
+                    return ResponseEntity.notFound().build();
+                });
+    }
+
 }

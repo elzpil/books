@@ -29,6 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User saveUser(User user) {
         log.info("Saving new user: {}", user.getEmail());
+        user.setRole("USER");
         UserDAO userDAO = userMapper.userToUserDAO(user);
         userDAO = userRepository.save(userDAO);
         return userMapper.userDAOToUser(userDAO);
@@ -52,18 +53,16 @@ public class UserServiceImpl implements UserService {
             if (updatedUser.getEmail() != null) {
                 existingUser.setEmail(updatedUser.getEmail());
             }
-            if (updatedUser.getAvatarUrl() != null) {
-                existingUser.setAvatarUrl(updatedUser.getAvatarUrl());
+            if (updatedUser.getUsername() != null) {
+                existingUser.setUsername(updatedUser.getUsername());
             }
             if (updatedUser.getBio() != null) {
                 existingUser.setBio(updatedUser.getBio());
             }
-            if (updatedUser.getRole() != null) {
-                existingUser.setRole(updatedUser.getRole());
-            }
+
 
             UserDAO updatedDAO = userRepository.save(existingUser);
-
+            log.info("Saving updated user with ID: {}", userId);
             return userMapper.userDAOToUser(updatedDAO);
         });
     }

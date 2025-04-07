@@ -20,7 +20,6 @@ public class Review {
 
     private Long userId;
 
-    @NotBlank(message = "Username cannot be blank")
     private String username;
 
     @NotBlank(message = "Review content cannot be blank")

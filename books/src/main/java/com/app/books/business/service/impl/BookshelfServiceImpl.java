@@ -118,4 +118,12 @@ public class BookshelfServiceImpl implements BookshelfService {
         return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
 
+    @Override
+    public Optional<BookshelfEntry> getBookshelfByBookIdAndUserId(Long userId, Long bookId) {
+        log.info("Fetching bookshelf entry for user {} with bookId {}", userId, bookId);
+        Optional<BookshelfDAO> entry = bookshelfRepository.findByUserIdAndBookId(userId, bookId);
+        return entry.map(bookshelfMapper::bookshelfDAOToBookshelfEntry);
+    }
+
+
 }

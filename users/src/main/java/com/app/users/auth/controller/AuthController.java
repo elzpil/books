@@ -45,7 +45,7 @@ public class AuthController {
 
         if (existingUserOptional.isEmpty()) {
             System.out.println("User not found");
-            return ResponseEntity.badRequest().body(Map.of("message", "Invalid credentials"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Incorrect username"));
         }
 
         User existingUser = existingUserOptional.get();
@@ -53,7 +53,7 @@ public class AuthController {
                 + existingUser.getId() + ", " + existingUser.getRole());
 
         if (!passwordEncoder.matches(user.getPassword(), existingUser.getPassword())) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Invalid credentials"));
+            return ResponseEntity.badRequest().body(Map.of("message", "Incorrect password"));
         }
 
         String token = jwtTokenUtil.generateToken(existingUser.getEmail(), existingUser.getId(), existingUser.getRole());
