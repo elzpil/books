@@ -2,6 +2,7 @@ package com.app.community.controller;
 
 import com.app.community.business.service.ChallengeParticipantService;
 import com.app.community.dto.ChallengeParticipantUpdateDTO;
+import com.app.community.model.Challenge;
 import com.app.community.model.ChallengeParticipant;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -49,4 +50,23 @@ public class ChallengeParticipantController {
         participantService.leaveChallenge(challengeId, token);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<Challenge>> getUserChallenges(@RequestHeader("Authorization") String token) {
+        return ResponseEntity.ok(participantService.getUserChallenges(token));
+    }
+
+    @GetMapping("/participation")
+    public ResponseEntity<ChallengeParticipant> getParticipationDetails(@PathVariable Long challengeId,
+                                                                        @RequestHeader("Authorization") String token) {
+        log.info("Getting participation details for challenge: {}", challengeId);
+        ChallengeParticipant participant = participantService.getParticipationDetails(challengeId, token);
+        if (participant != null) {
+            return ResponseEntity.ok(participant);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
 }

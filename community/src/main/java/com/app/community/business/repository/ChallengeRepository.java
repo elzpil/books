@@ -24,4 +24,7 @@ public interface ChallengeRepository extends JpaRepository<ChallengeDAO, Long> {
             "ORDER BY COUNT(cp.participantId) DESC")
     List<ChallengeDAO> findChallengesSortedByPopularity();
 
+    List<ChallengeDAO> findAllById(Iterable<Long> ids);
+
+
 }

@@ -178,4 +178,16 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
+    @Override
+    public List<User> searchUsers(String name, String username, String email) {
+        log.info("Searching users with name: {}, username: {}, email: {}", name, username, email);
+
+        // Perform search query with possible filters for name, username, and email
+        List<UserDAO> userDAOs = userRepository.searchUsers(name, username, email);
+        return userDAOs.stream()
+                .map(userMapper::userDAOToUser)
+                .collect(Collectors.toList());
+    }
+
+
 }

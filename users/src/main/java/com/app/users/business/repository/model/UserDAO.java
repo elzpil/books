@@ -13,13 +13,13 @@ public class UserDAO {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, name = "email", columnDefinition = "VARCHAR")
     private String email;
 
     @Column(name = "password_hash", nullable = false)
     private String password;
 
-    @Column(length = 100)
+    @Column(length = 100, name = "name", columnDefinition = "VARCHAR")
     private String name;
 
     @Column(name = "avatar_url", columnDefinition = "TEXT")
@@ -34,7 +34,7 @@ public class UserDAO {
     @Column(name = "user_role", nullable = false)
     private String role;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, columnDefinition = "VARCHAR")
     private String username;
 
     public UserDAO() {

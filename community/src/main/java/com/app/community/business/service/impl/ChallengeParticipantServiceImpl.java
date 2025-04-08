@@ -1,12 +1,16 @@
 package com.app.community.business.service.impl;
 
 import com.app.community.auth.util.JwtTokenUtil;
+import com.app.community.business.mapper.ChallengeMapper;
 import com.app.community.business.mapper.ChallengeParticipantMapper;
 import com.app.community.business.repository.ChallengeParticipantRepository;
+import com.app.community.business.repository.ChallengeRepository;
+import com.app.community.business.repository.model.ChallengeDAO;
 import com.app.community.business.repository.model.ChallengeParticipantDAO;
 import com.app.community.business.service.ChallengeParticipantService;
 import com.app.community.dto.ChallengeParticipantUpdateDTO;
 import com.app.community.exception.UnauthorizedException;
+import com.app.community.model.Challenge;
 import com.app.community.model.ChallengeParticipant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,13 +24,20 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
 
     private final ChallengeParticipantRepository participantRepository;
     private final ChallengeParticipantMapper participantMapper;
+    private final ChallengeRepository challengeRepository;
+
+    private final ChallengeMapper challengeMapper;
     private final JwtTokenUtil jwtTokenUtil;
 
     public ChallengeParticipantServiceImpl(ChallengeParticipantRepository participantRepository,
                                            ChallengeParticipantMapper participantMapper,
+                                           ChallengeRepository challengeRepository,
+                                           ChallengeMapper challengeMapper,
                                            JwtTokenUtil jwtTokenUtil) {
         this.participantRepository = participantRepository;
         this.participantMapper = participantMapper;
+        this.challengeRepository = challengeRepository;
+        this.challengeMapper = challengeMapper;
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
@@ -108,4 +119,32 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
         String role = jwtTokenUtil.extractRole(cleanToken);
         return tokenUserId.equals(userId) || "ADMIN".equals(role);
     }
+
+    @Override
+    public List<Challenge> getUserChallenges(String token) {
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+        List<ChallengeParticipantDAO> participants = participantRepository.findByUserId(userId);
+        List<Long> challengeIds = participants.stream()
+                .map(ChallengeParticipantDAO::getChallengeId)
+                .toList();
+
+        List<ChallengeDAO> challenges = challengeRepository.findAllById(challengeIds);
+        return challenges.stream()
+                .map(challengeMapper::challengeDAOToChallenge)
+                .toList();
+    }
+
+    @Override
+    public ChallengeParticipant getParticipationDetails(Long challengeId, String token) {
+        log.info("Getting participation details for challengeId: {}", challengeId);
+        Long userId = jwtTokenUtil.extractUserId(token.replace("Bearer ", ""));
+
+        return participantRepository.findByChallengeIdAndUserId(challengeId, userId)
+                .map(participantMapper::challengeParticipantDAOToChallengeParticipant)
+                .orElse(null);
+    }
+
+
+
+
 }

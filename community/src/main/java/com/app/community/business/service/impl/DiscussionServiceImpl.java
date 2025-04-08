@@ -47,7 +47,7 @@ public class DiscussionServiceImpl implements DiscussionService {
 
         if (discussion.getBookId() != null) {
             log.info("Validating book with ID: {}", discussion.getBookId());
-            if (!bookServiceClient.doesBookExist(discussion.getBookId())) {
+            if (!bookServiceClient.doesBookExist(discussion.getBookId(), token)) {
                 throw new IllegalArgumentException("Book with ID " + discussion.getBookId() + " does not exist.");
             }
         }

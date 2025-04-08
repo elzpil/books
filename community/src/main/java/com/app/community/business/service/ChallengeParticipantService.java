@@ -1,6 +1,7 @@
 package com.app.community.business.service;
 
 import com.app.community.dto.ChallengeParticipantUpdateDTO;
+import com.app.community.model.Challenge;
 import com.app.community.model.ChallengeParticipant;
 
 import java.util.List;
@@ -11,4 +12,8 @@ public interface ChallengeParticipantService {
     ChallengeParticipant updateProgress(Long challengeId, ChallengeParticipantUpdateDTO challengeParticipantUpdateDTO,
                                         String token);
     void leaveChallenge(Long challengeId, String token);
+
+    List<Challenge> getUserChallenges(String token);
+    ChallengeParticipant getParticipationDetails(Long challengeId, String token);
+
 }

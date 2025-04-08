@@ -102,5 +102,14 @@ public class UserController {
         }
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<User>> searchUsers(@RequestParam(required = false) String name,
+                                                  @RequestParam(required = false) String username,
+                                                  @RequestParam(required = false) String email) {
+        List<User> users = userService.searchUsers(name, username, email);
+        return ResponseEntity.ok(users);
+    }
+
+
 
 }

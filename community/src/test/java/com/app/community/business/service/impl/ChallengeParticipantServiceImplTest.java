@@ -3,6 +3,7 @@ package com.app.community.business.service.impl;
 import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.ChallengeParticipantMapper;
 import com.app.community.business.repository.ChallengeParticipantRepository;
+import com.app.community.business.repository.ChallengeRepository;
 import com.app.community.business.repository.model.ChallengeParticipantDAO;
 import com.app.community.dto.ChallengeParticipantUpdateDTO;
 import com.app.community.exception.UnauthorizedException;
@@ -24,6 +25,8 @@ class ChallengeParticipantServiceImplTest {
     private ChallengeParticipantRepository participantRepository;
 
     @Mock
+    private ChallengeRepository challengeRepository;
+    @Mock
     private ChallengeParticipantMapper participantMapper;
 
     @Mock
@@ -34,7 +37,8 @@ class ChallengeParticipantServiceImplTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        participantService = new ChallengeParticipantServiceImpl(participantRepository, participantMapper, jwtTokenUtil);
+        participantService = new ChallengeParticipantServiceImpl(participantRepository,
+                participantMapper, challengeRepository, jwtTokenUtil);
     }
 
     @Test
