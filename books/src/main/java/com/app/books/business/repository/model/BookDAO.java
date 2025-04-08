@@ -13,10 +13,10 @@ public class BookDAO {
     @Column(name = "book_id")
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "title", columnDefinition = "VARCHAR")
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "author", columnDefinition = "VARCHAR")
     private String author;
 
     @Column(columnDefinition = "TEXT")
@@ -25,6 +25,7 @@ public class BookDAO {
     @Column(name = "published_date")
     private LocalDate publishedDate;
 
+    @Column(nullable = false, name = "genre", columnDefinition = "VARCHAR")
     private String genre;
 
     public BookDAO() {}

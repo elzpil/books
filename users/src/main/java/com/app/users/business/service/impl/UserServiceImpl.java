@@ -7,6 +7,8 @@ import com.app.users.business.service.UserService;
 import com.app.users.exception.ResourceNotFoundException;
 import com.app.users.model.User;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,9 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
@@ -150,4 +155,27 @@ public class UserServiceImpl implements UserService {
     public boolean userExists(Long userId) {
         return userRepository.existsById(userId);
     }
+
+
+    @Override
+    public boolean changePassword(Long userId, String oldPassword, String newPassword) {
+        Optional<UserDAO> userOpt = userRepository.findById(userId);
+
+        if (userOpt.isEmpty()) {
+            throw new ResourceNotFoundException("User", userId);
+        }
+
+        UserDAO user = userOpt.get();
+
+        // Check old password
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return false;
+        }
+
+        // Encode and set new password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+        return true;
+    }
+
 }

@@ -16,4 +16,7 @@ public interface UserService {
     Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
     boolean userExists(Long userId);
+
+    boolean changePassword(Long userId, String oldPassword, String newPassword);
+
 }

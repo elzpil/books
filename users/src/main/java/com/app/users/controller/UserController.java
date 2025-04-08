@@ -2,6 +2,7 @@ package com.app.users.controller;
 
 import com.app.users.auth.util.JwtTokenUtil;
 import com.app.users.business.service.UserService;
+import com.app.users.dto.ChangePasswordRequest;
 import com.app.users.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -83,5 +84,23 @@ public class UserController {
         boolean userExists = userService.userExists(userId);
         return ResponseEntity.ok(userExists);
     }
+
+    @PutMapping("/{userId}/password")
+    public ResponseEntity<String> changePassword(@PathVariable Long userId,
+                                                 @RequestBody ChangePasswordRequest request,
+                                                 @RequestHeader("Authorization") String token) {
+        if (!isAuthorized(token, userId)) {
+            return ResponseEntity.status(403).body("Unauthorized to change this password");
+        }
+
+        boolean success = userService.changePassword(userId, request.getOldPassword(), request.getNewPassword());
+
+        if (success) {
+            return ResponseEntity.ok("Password changed successfully");
+        } else {
+            return ResponseEntity.badRequest().body("Old password is incorrect");
+        }
+    }
+
 
 }
