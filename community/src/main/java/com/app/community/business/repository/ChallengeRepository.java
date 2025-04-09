@@ -15,6 +15,13 @@ public interface ChallengeRepository extends JpaRepository<ChallengeDAO, Long> {
     @Query("SELECT c FROM ChallengeDAO c WHERE " +
             "(:name IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))) AND " +
             "(:description IS NULL OR LOWER(c.description) LIKE LOWER(CONCAT('%', :description, '%')))")
+    List<ChallengeDAO> searchChallenges2(@Param("name") String name,
+                                        @Param("description") String description);
+
+    @Query(value = "SELECT * FROM challenges b WHERE " +
+            "(LOWER(b.name) LIKE LOWER(CONCAT('%', :name, '%'))) OR " +
+            "(LOWER(b.description) LIKE LOWER(CONCAT('%', :description, '%'))) ",
+            nativeQuery = true)
     List<ChallengeDAO> searchChallenges(@Param("name") String name,
                                         @Param("description") String description);
 
