@@ -42,11 +42,9 @@ public class EventParticipantController {
         List<EventParticipant> participants;
 
         if (rsvpStatus != null) {
-            // Call service method with rsvpStatus filter
             log.info("Getting participants for event with id: {} with rsvp status", eventId);
             participants = eventParticipantService.getParticipantsForEventByRsvpStatus(eventId, rsvpStatus);
         } else {
-            // Call service method to get all participants for the event
             log.info("Getting participants for event with id: {}", eventId);
             participants = eventParticipantService.getParticipantsForEvent(eventId);
         }

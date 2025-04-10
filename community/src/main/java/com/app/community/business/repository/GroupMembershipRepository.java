@@ -10,4 +10,6 @@ public interface GroupMembershipRepository extends JpaRepository<GroupMembership
     List<GroupMembershipDAO> findByGroupId(Long groupId);
     Optional<GroupMembershipDAO> findByGroupIdAndUserId(Long groupId, Long userId);
     void deleteByGroupIdAndUserId(Long groupId, Long userId);
+
+    List<GroupMembershipDAO> findByUserId(Long userId);
 }

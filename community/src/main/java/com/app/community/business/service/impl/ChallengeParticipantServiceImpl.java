@@ -143,8 +143,4 @@ public class ChallengeParticipantServiceImpl implements ChallengeParticipantServ
                 .map(participantMapper::challengeParticipantDAOToChallengeParticipant)
                 .orElse(null);
     }
-
-
-
-
 }

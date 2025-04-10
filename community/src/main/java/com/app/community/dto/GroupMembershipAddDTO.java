@@ -1,15 +1,16 @@
+
 package com.app.community.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
-public class GroupMembershipUpdateDTO {
 
-    @NotNull(message = "User ID is required")
+public class GroupMembershipAddDTO {
+    @NotNull
     private Long userId;
 
-    @NotBlank(message = "Role is required")
-    private String role; // 'admin', 'moderator', 'member'
+    @NotNull
+    private String role; // e.g., "member" or "moderator"
 
     public Long getUserId() {
         return userId;
