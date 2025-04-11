@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -52,25 +53,35 @@ public class UserServiceImpl implements UserService {
         log.info("Updating user with ID: {}", userId);
 
         return userRepository.findById(userId).map(existingUser -> {
-            if (updatedUser.getName() != null) {
-                existingUser.setName(updatedUser.getName());
+            if (!Objects.equals(updatedUser.getEmail(), existingUser.getEmail()) &
+                    userRepository.findByEmail(updatedUser.getEmail()) != null) {
+                log.info("Email {} already exists. Not updating.", updatedUser.getEmail());
             }
-            if (updatedUser.getEmail() != null) {
+            else {
                 existingUser.setEmail(updatedUser.getEmail());
             }
-            if (updatedUser.getUsername() != null) {
-                existingUser.setUsername(updatedUser.getUsername());
+
+            if (!Objects.equals(updatedUser.getUsername(), existingUser.getUsername()) &
+                    userRepository.findByUsername(updatedUser.getUsername()) != null) {
+                log.info("Username {} already exists. Not updating.", updatedUser.getUsername());
+            }
+            else {
+                existingUser.setEmail(updatedUser.getEmail());
+            }
+
+            if (updatedUser.getName() != null) {
+                existingUser.setName(updatedUser.getName());
             }
             if (updatedUser.getBio() != null) {
                 existingUser.setBio(updatedUser.getBio());
             }
-
 
             UserDAO updatedDAO = userRepository.save(existingUser);
             log.info("Saving updated user with ID: {}", userId);
             return userMapper.userDAOToUser(updatedDAO);
         });
     }
+
 
 
     @Override
@@ -144,6 +155,12 @@ public class UserServiceImpl implements UserService {
         return Optional.ofNullable(userRepository.findByEmail(email))
                 .map(userMapper::userDAOToUser);
     }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.findByEmail(email) != null;
+    }
+
 
 
     @Override

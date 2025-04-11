@@ -29,11 +29,11 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody User user) {
-        if (userService.existsByUsername(user.getEmail())) {  // Fix to check email instead
+        if (userService.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest().body("Email already exists");
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword())); // Encrypt password
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.saveUser(user);
         return ResponseEntity.ok("User registered successfully");
     }

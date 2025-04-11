@@ -20,5 +20,7 @@ public interface UserService {
     boolean changePassword(Long userId, String oldPassword, String newPassword);
 
     List<User> searchUsers(String name, String username, String email);
+    boolean existsByEmail(String email);
+
 
 }
