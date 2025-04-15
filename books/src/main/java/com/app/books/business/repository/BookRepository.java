@@ -16,9 +16,10 @@ public interface BookRepository extends JpaRepository<BookDAO, Long> {
     List<BookDAO> findByTitleContainingIgnoreCase(String title);
     boolean existsById(Long bookId);
     @Query(value = "SELECT * FROM books b WHERE " +
+            "b.is_verified = true AND (" +
             "(:genre IS NULL OR b.genre = :genre) OR " +
             "(:author IS NULL OR LOWER(b.author) LIKE LOWER(CONCAT('%', :author, '%'))) OR " +
-            "(:title IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))) ",
+            "(:title IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))))",
             nativeQuery = true)
     List<BookDAO> findBooksByFilters(@Param("genre") String genre,
                                      @Param("author") String author,

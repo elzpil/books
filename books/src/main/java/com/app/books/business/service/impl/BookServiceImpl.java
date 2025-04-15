@@ -26,20 +26,26 @@ public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final JwtTokenUtil jwtTokenUtil;
+    private final EmailServiceImpl emailService;
 
-    public BookServiceImpl(BookRepository bookRepository, BookMapper bookMapper, JwtTokenUtil jwtTokenUtil) {
+    private final UserServiceClient userServiceClient;
+
+    public BookServiceImpl(BookRepository bookRepository, BookMapper bookMapper, JwtTokenUtil jwtTokenUtil, EmailServiceImpl emailService, UserServiceClient userServiceClient) {
         this.bookRepository = bookRepository;
         this.bookMapper = bookMapper;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.emailService = emailService;
+        this.userServiceClient = userServiceClient;
     }
 
     @Override
     public Book saveBook(Book book, String token) {
-        if (!isAdmin(token)) {
-            throw new UnauthorizedException("Only admins can create books");
-        }
+
+        book.setVerified(Boolean.FALSE);
+        log.info("is verified set to k: {}", book.getVerified());
         log.info("Saving a new book: {}", book.getTitle());
         BookDAO bookDAO = bookRepository.save(bookMapper.bookToBookDAO(book));
+
         return bookMapper.bookDAOToBook(bookDAO);
     }
 
@@ -64,15 +70,11 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book updateBook(Long bookId, BookUpdateDTO bookUpdateDTO, String token) {
 
-        if (!isAdmin(token)) {
-            throw new UnauthorizedException("Only admins can create books");
-        }
         log.info("Updating book with ID: {}", bookId);
 
         BookDAO existingBook = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book", bookId));
 
-        // Log before updates
         log.info("Before updating: Title = {}, Author = {}, Genre = {}",
                 existingBook.getTitle(), existingBook.getAuthor(), existingBook.getGenre());
 
@@ -124,27 +126,6 @@ public class BookServiceImpl implements BookService {
         log.info("Book with ID {} successfully deleted", bookId);
     }
 
-    /*@Override
-    public List<Book> getBooks(String genre, String author, String title) {
-        log.info("Fetching books with filters - Genre: {}, Author: {}, Title: {}", genre, author, title);
-
-        List<BookDAO> books;
-
-        if (genre != null) {
-            books = bookRepository.findByGenre(genre);
-        } else if (author != null) {
-            books = bookRepository.findByAuthor(author);
-        } else if (title != null) {
-            books = bookRepository.findByTitleContainingIgnoreCase(title);
-        } else {
-            books = bookRepository.findAll();
-        }
-
-        return books.stream()
-                .map(bookMapper::bookDAOToBook)
-                .collect(Collectors.toList());
-    }*/
-
     @Override
     public boolean bookExists(Long bookId) {
         return bookRepository.existsById(bookId);
@@ -154,10 +135,8 @@ public class BookServiceImpl implements BookService {
     public List<Book> getBooks(String genre, String author, String title) {
         log.info("Fetching books with filters - Genre: {}, Author: {}, Title: {}", genre, author, title);
 
-        // Use the custom query that supports all filters
         List<BookDAO> books = bookRepository.findBooksByFilters(genre, author, title);
 
-        // Convert BookDAO to Book before returning
         return books.stream()
                 .map(bookMapper::bookDAOToBook)
                 .collect(Collectors.toList());
@@ -168,4 +147,29 @@ public class BookServiceImpl implements BookService {
         String role = jwtTokenUtil.extractRole(cleanToken);
         return  "ADMIN".equals(role);
     }
+
+    @Override
+    public void verify(Long bookId, String token) {
+        if (!isAdmin(token)) {
+            throw new UnauthorizedException("Only admins can verify books");
+        }
+
+        BookDAO existingBook = bookRepository.findById(bookId)
+                .orElseThrow(() -> new ResourceNotFoundException("Book", bookId));
+
+        existingBook.setVerified(Boolean.TRUE);
+        bookRepository.save(existingBook);
+
+        String userEmail = userServiceClient.getUserEmail(existingBook.getUserId());
+        if (userEmail != null) {
+            emailService.sendSimpleMessage(
+                    userEmail,
+                    "Knyga patvirtinta",
+                    String.format("Sveiki, knyga, pavadinimu %s, buvo patvirtinta. Ją galite rasti paieškoje.", existingBook.getTitle())
+            );
+        }
+
+        log.info("Book with ID {} has been verified", bookId);
+    }
+
 }

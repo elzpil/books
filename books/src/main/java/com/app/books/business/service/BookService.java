@@ -16,4 +16,5 @@ public interface BookService {
     List<Book> getBooks(String genre, String author, String title);
     boolean bookExists(Long bookId);
 
+    void verify(Long bookId, String token);
 }

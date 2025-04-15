@@ -8,12 +8,12 @@ import com.app.books.dto.BookUpdateDTO;
 import com.app.books.exception.ResourceNotFoundException;
 import com.app.books.exception.UnauthorizedException;
 import com.app.books.model.Book;
+import org.apache.catalina.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,12 +34,18 @@ class BookServiceImplTest {
     @Mock
     private JwtTokenUtil jwtTokenUtil;
 
+    @Mock
+    private EmailServiceImpl emailService;
+
+    @Mock
+    private UserServiceClient userServiceClient;
+
     private BookServiceImpl bookService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        bookService = new BookServiceImpl(bookRepository, bookMapper, jwtTokenUtil);
+        bookService = new BookServiceImpl(bookRepository, bookMapper, jwtTokenUtil, emailService, userServiceClient);
     }
 
     @Test

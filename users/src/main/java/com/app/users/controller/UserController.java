@@ -110,6 +110,12 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    @GetMapping("/{userId}/email")
+    public ResponseEntity<String> getUserEmail(@PathVariable Long userId) {
+        Optional<User> user = userService.getUserById(userId);
+        return user.map(u -> ResponseEntity.ok(u.getEmail()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
 
 
 }
