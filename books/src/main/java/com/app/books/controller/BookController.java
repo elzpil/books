@@ -7,6 +7,8 @@ import com.app.books.exception.ResourceNotFoundException;
 import com.app.books.model.Book;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +44,14 @@ public class BookController {
         List<Book> books = bookService.getBooks(genre, author, title);
         return ResponseEntity.ok(books);
     }
-
+    @GetMapping("/all")
+    public ResponseEntity<List<Book>> getAllBooks(@RequestParam(defaultValue = "0") int page,
+                                                  @RequestParam(defaultValue = "10") int size) {
+        log.info("Fetching all books (admin view), page: {}, size: {}", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        List<Book> books = bookService.getAllBooks(pageable);
+        return ResponseEntity.ok(books);
+    }
 
     @GetMapping("/{bookId}")
     public ResponseEntity<Book> getBookById(@PathVariable Long bookId) {

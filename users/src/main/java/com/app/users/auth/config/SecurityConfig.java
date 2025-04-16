@@ -51,6 +51,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/create").permitAll()
                         .requestMatchers("/users/exists/*").permitAll()
                         .requestMatchers("/users/{userId}").permitAll()
+                        .requestMatchers("/users/{userId}/email").permitAll()
                         .requestMatchers("/users/{userId}/role").hasRole("ADMIN")
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )

@@ -29,7 +29,7 @@ public class UserServiceClient {
             String url = "http://localhost:8082/users/" + userId + "/email";
             return restTemplate.getForObject(url, String.class);
         } catch (HttpClientErrorException e) {
-            log.error("Failed to get email for user with ID {}", userId);
+            log.error("Failed to get email for user with ID {}: {}", userId, e.getMessage());
             return null;
         }
     }
