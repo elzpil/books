@@ -76,5 +76,14 @@ public class BookController {
         boolean exists = bookService.bookExists(bookId);
         return ResponseEntity.ok(exists);
     }
+
+    @PutMapping("/{bookId}/verify")
+    public ResponseEntity<Void> verifyBook(@PathVariable Long bookId,
+                                           @RequestHeader("Authorization") String token) {
+        log.info("Verifying book with ID: {}", bookId);
+        bookService.verify(bookId, token);
+        return ResponseEntity.noContent().build();
+    }
+
 }
 
