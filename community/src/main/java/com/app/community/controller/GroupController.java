@@ -63,9 +63,11 @@ public class GroupController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Group>> searchGroupsByName(@RequestParam String name) {
-        List<Group> groups = groupService.searchGroupsByName(name);
+    public ResponseEntity<List<Group>> searchGroups(
+            @RequestParam(required = false) String query) {
+        List<Group> groups = groupService.searchPublicGroups(query);
         return ResponseEntity.ok(groups);
     }
+
 
 }

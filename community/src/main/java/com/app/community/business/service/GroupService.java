@@ -19,4 +19,5 @@ public interface GroupService {
     void deleteGroup(Long groupId, String token);
 
     List<Group> searchGroupsByName(String name);
+    List<Group> searchPublicGroups(String query);
 }

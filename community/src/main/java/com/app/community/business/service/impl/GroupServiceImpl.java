@@ -116,4 +116,11 @@ public class GroupServiceImpl implements GroupService {
                 .collect(Collectors.toList());
     }
 
+    public List<Group> searchPublicGroups(String query) {
+        return groupRepository.findByPrivacySettingAndQuery(query.toLowerCase()).stream()
+                .map(groupMapper::groupDAOToGroup)
+                .collect(Collectors.toList());
+    }
+
+
 }
