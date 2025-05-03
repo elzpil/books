@@ -13,10 +13,7 @@ public class ChallengeUpdateDTO {
 
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;
-    @FutureOrPresent(message = "Start date cannot be in the past")
     private LocalDate startDate;
-
-    @FutureOrPresent(message = "End date cannot be in the past")
     private LocalDate endDate;
 
     public String getName() {
