@@ -17,6 +17,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpStatus.*;
+import com.app.users.dto.ChangePasswordRequest;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
@@ -185,4 +186,105 @@ class UserControllerTest {
 
         verify(userService, times(1)).userExists(userId);
     }
+
+    @Test
+    void changePassword_AuthorizedAndCorrectOldPassword_ShouldSucceed() {
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(userId);
+        when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
+        when(userService.changePassword(userId, "oldPass", "newPass")).thenReturn(true);
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword("oldPass");
+        request.setNewPassword("newPass");
+        ResponseEntity<String> response = userController.changePassword(userId, request, token);
+
+        assertEquals(OK, response.getStatusCode());
+        assertEquals("Password changed successfully", response.getBody());
+        verify(userService).changePassword(userId, "oldPass", "newPass");
+    }
+
+    @Test
+    void changePassword_AuthorizedButIncorrectOldPassword_ShouldReturnBadRequest() {
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(userId);
+        when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
+        when(userService.changePassword(userId, "wrongOld", "newPass")).thenReturn(false);
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword("wrongOld");
+        request.setNewPassword("newPass");
+        ResponseEntity<String> response = userController.changePassword(userId, request, token);
+
+        assertEquals(BAD_REQUEST, response.getStatusCode());
+        assertEquals("Old password is incorrect", response.getBody());
+        verify(userService).changePassword(userId, "wrongOld", "newPass");
+    }
+
+    @Test
+    void changePassword_Unauthorized_ShouldReturnForbidden() {
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L); // Not matching userId
+
+        ChangePasswordRequest request = new ChangePasswordRequest();
+        request.setOldPassword("oldPass");
+        request.setNewPassword("newPass");
+        ResponseEntity<String> response = userController.changePassword(userId, request, token);
+
+        assertEquals(FORBIDDEN, response.getStatusCode());
+        assertEquals("Unauthorized to change this password", response.getBody());
+        verify(userService, never()).changePassword(anyLong(), anyString(), anyString());
+    }
+    @Test
+    void searchUsers_WithAllParams_ShouldReturnResults() {
+        when(userService.searchUsers("John", "john123", "john@example.com"))
+                .thenReturn(List.of(user));
+
+        ResponseEntity<List<User>> response = userController.searchUsers("John", "john123", "john@example.com");
+
+        assertEquals(OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+        assertEquals(user.getId(), response.getBody().get(0).getId());
+    }
+
+    @Test
+    void searchUsers_WithPartialParams_ShouldReturnResults() {
+        when(userService.searchUsers(null, "john123", null))
+                .thenReturn(List.of(user));
+
+        ResponseEntity<List<User>> response = userController.searchUsers(null, "john123", null);
+
+        assertEquals(OK, response.getStatusCode());
+        assertEquals(1, response.getBody().size());
+    }
+
+    @Test
+    void searchUsers_NoParams_ShouldReturnEmptyList() {
+        when(userService.searchUsers(null, null, null)).thenReturn(List.of());
+
+        ResponseEntity<List<User>> response = userController.searchUsers(null, null, null);
+
+        assertEquals(OK, response.getStatusCode());
+        assertTrue(response.getBody().isEmpty());
+    }
+
+    @Test
+    void getUserEmail_UserExists_ShouldReturnEmail() {
+        user.setEmail("test@example.com");
+        when(userService.getUserById(userId)).thenReturn(Optional.of(user));
+
+        ResponseEntity<String> response = userController.getUserEmail(userId);
+
+        assertEquals(OK, response.getStatusCode());
+        assertEquals("test@example.com", response.getBody());
+    }
+
+    @Test
+    void getUserEmail_UserNotFound_ShouldReturnNotFound() {
+        when(userService.getUserById(userId)).thenReturn(Optional.empty());
+
+        ResponseEntity<String> response = userController.getUserEmail(userId);
+
+        assertEquals(NOT_FOUND, response.getStatusCode());
+        assertNull(response.getBody());
+    }
+
+
 }

@@ -78,10 +78,11 @@ public class BookshelfServiceImpl implements BookshelfService {
     @Override
     public BookshelfEntry updateReadingStatus(Long bookshelfId, BookshelfUpdateDTO bookshelfUpdateDTO, String token) {
         log.info("Updating reading status for bookshelf entry {}", bookshelfId);
+        log.info(" bookshelfupdatedto.getstatus {}", bookshelfUpdateDTO.getStatus());
 
         BookshelfDAO entry = bookshelfRepository.findById(bookshelfId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bookshelf entry", bookshelfId));
-
+        log.info(" entry {}", entry);
         if (!isAuthorized(token, entry.getUserId())) {
             log.warn("Unauthorized attempt to modify bookshelf entry {} by user", bookshelfId);
             throw new UnauthorizedException("User is not authorized to modify this bookshelf entry");
@@ -91,7 +92,10 @@ public class BookshelfServiceImpl implements BookshelfService {
         }
 
         BookshelfEntry updatedEntry = bookshelfMapper.bookshelfDAOToBookshelfEntry(bookshelfRepository.save(entry));
-        updatedEntry.setCreatedAt(LocalDate.now());
+        log.info(" bookshelf entry: {}", updatedEntry);
+        if (updatedEntry != null) {
+            updatedEntry.setCreatedAt(LocalDate.now());
+        }
         log.info("Successfully updated bookshelf entry: {}", updatedEntry);
         return updatedEntry;
     }

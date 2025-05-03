@@ -158,4 +158,30 @@ class EventServiceImplTest {
         assertThrows(ResourceNotFoundException.class, () -> eventService.deleteEvent(1L, "Bearer token"));
         verify(eventRepository, never()).deleteById(anyLong());
     }
+    @Test
+    void testCreateEvent_InvalidToken() {
+        when(jwtTokenUtil.extractUserId(anyString())).thenThrow(new RuntimeException("Invalid Token"));
+
+        assertThrows(RuntimeException.class, () -> eventService.createEvent(event, "Bearer invalid_token"));
+    }
+    @Test
+    void testGetAllEvents_NoFilters() {
+        when(eventRepository.findAll()).thenReturn(List.of(eventDAO));
+        when(eventMapper.eventDAOToEvent(any(EventDAO.class))).thenReturn(event);
+
+        List<Event> events = eventService.getAllEvents(null, null, null);
+
+        assertFalse(events.isEmpty());
+        assertEquals(1, events.size());
+        verify(eventRepository, times(1)).findAll();
+    }
+    @Test
+    void testGetEventById_NotFound() {
+        when(eventRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        Event result = eventService.getEventById(1L);
+
+        assertNull(result);
+        verify(eventRepository, times(1)).findById(anyLong());
+    }
 }

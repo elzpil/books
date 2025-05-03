@@ -1,6 +1,7 @@
 package com.app.community.business.service.impl;
 
 import com.app.community.auth.util.JwtTokenUtil;
+import com.app.community.business.mapper.ChallengeMapper;
 import com.app.community.business.mapper.ChallengeParticipantMapper;
 import com.app.community.business.repository.ChallengeParticipantRepository;
 import com.app.community.business.repository.ChallengeRepository;
@@ -30,6 +31,9 @@ class ChallengeParticipantServiceImplTest {
     private ChallengeParticipantMapper participantMapper;
 
     @Mock
+    private ChallengeMapper challengeMapper;
+
+    @Mock
     private JwtTokenUtil jwtTokenUtil;
 
     private ChallengeParticipantServiceImpl participantService;
@@ -38,7 +42,7 @@ class ChallengeParticipantServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         participantService = new ChallengeParticipantServiceImpl(participantRepository,
-                participantMapper, challengeRepository, jwtTokenUtil);
+                participantMapper, challengeRepository, challengeMapper, jwtTokenUtil);
     }
 
     @Test

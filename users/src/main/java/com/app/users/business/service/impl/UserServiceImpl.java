@@ -24,12 +24,12 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -132,22 +132,6 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("Username", 0L)); //TODO fix this
     }
 
-   /* @Override
-    public User findByEmail(String email) {
-        // Get the UserDAO object from the repository and handle it with Optional
-        Optional<UserDAO> userDAO = Optional.ofNullable(userRepository.findByEmail(email));
-
-        // Check if the userDAO is present and then retrieve the user data
-        if (userDAO.isPresent()) {
-            UserDAO u = userDAO.get();  // Get the UserDAO object
-            System.out.println("findByEmail in service: " + u.getId());  // Now you can access getId()
-            return .map(userMapper::userDAOToUser);  // Map to User object
-        } else {
-            // Throw exception if the user is not found
-            throw new ResourceNotFoundException("Email", email);
-        }
-    }*/
-
     @Override
     public Optional<User> findByEmail(String email) {
         log.info("Fetching user by email: {}", email);
@@ -205,6 +189,4 @@ public class UserServiceImpl implements UserService {
                 .map(userMapper::userDAOToUser)
                 .collect(Collectors.toList());
     }
-
-
 }

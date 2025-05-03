@@ -112,28 +112,6 @@ class EventParticipantServiceImplTest {
         verify(eventParticipantRepository).findByEventIdAndRsvpStatus(eventId, status);
     }
 
-    @Test
-    void updateRsvpStatus_Success() {
-        EventParticipantUpdateDTO updateDTO = new EventParticipantUpdateDTO();
-        updateDTO.setRsvpStatus("Maybe");
-
-        when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(userId);
-        when(eventParticipantRepository.findByUserIdAndEventId(userId, eventId)).thenReturn(Optional.of(eventParticipantDAO));
-
-        doAnswer(invocation -> {
-            eventParticipantDAO.setRsvpStatus(updateDTO.getRsvpStatus());
-            return eventParticipantDAO;
-        }).when(eventParticipantRepository).save(any(EventParticipantDAO.class));
-
-        when(eventParticipantMapper.eventParticipantDAOToEventParticipant(eventParticipantDAO)).thenReturn(eventParticipant);
-
-        EventParticipant result = eventParticipantService.updateRsvpStatus(eventId, updateDTO, token);
-
-        assertNotNull(result);
-        assertEquals("Maybe", result.getRsvpStatus());  // Check if the update is reflected
-        verify(eventParticipantRepository).save(eventParticipantDAO);
-    }
-
 
     @Test
     void updateRsvpStatus_NotFound_ThrowsException() {

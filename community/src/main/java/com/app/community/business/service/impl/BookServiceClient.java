@@ -44,5 +44,4 @@ public class BookServiceClient {
             return false;
         }
     }
-
 }

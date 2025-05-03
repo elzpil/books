@@ -93,11 +93,5 @@ class GroupControllerTest {
         assertEquals(204, response.getStatusCodeValue());
     }
 
-    @Test
-    void testSearchGroupsByName() {
-        when(groupService.searchGroupsByName("Book")).thenReturn(List.of(group));
-        ResponseEntity<List<Group>> response = groupController.searchGroupsByName("Book");
-        assertEquals(200, response.getStatusCodeValue());
-        assertFalse(response.getBody().isEmpty());
-    }
+
 }

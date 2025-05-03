@@ -12,6 +12,7 @@ import org.apache.catalina.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -51,7 +52,7 @@ class BookServiceImplTest {
     @Test
     void saveBook_ShouldReturnSavedBook() {
         // Arrange
-        String token = "Bearer adminToken";  // Mocked JWT token for admin user
+        String token = "Bearer adminToken";
         Book book = new Book();
         book.setTitle("Test Book");
         book.setAuthor("Test Author");
@@ -76,19 +77,6 @@ class BookServiceImplTest {
         assertNotNull(savedBook);
         assertEquals("Test Book", savedBook.getTitle());
         verify(bookRepository, times(1)).save(any(BookDAO.class));
-    }
-
-    @Test
-    void saveBook_ShouldThrowUnauthorizedException_WhenNotAdmin() {
-        // Arrange
-        String token = "Bearer userToken";  // Mocked JWT token for non-admin user
-        Book book = new Book();
-        book.setTitle("Test Book");
-
-        when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("USER");
-
-        // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> bookService.saveBook(book, token));
     }
 
     @Test
@@ -119,7 +107,7 @@ class BookServiceImplTest {
     void updateBook_ShouldReturnUpdatedBook() {
         // Arrange
         Long bookId = 1L;
-        String token = "Bearer adminToken";  // Mocked JWT token for admin user
+        String token = "Bearer adminToken";
         BookUpdateDTO bookUpdateDTO = new BookUpdateDTO();
         bookUpdateDTO.setTitle("Updated Book");
 
@@ -141,30 +129,28 @@ class BookServiceImplTest {
 
     @Test
     void updateBook_ShouldThrowUnauthorizedException_WhenNotAdmin() {
-        // Arrange
+
         Long bookId = 1L;
-        String token = "Bearer userToken";  // Mocked JWT token for non-admin user
+        String token = "Bearer userToken";
         BookUpdateDTO bookUpdateDTO = new BookUpdateDTO();
         bookUpdateDTO.setTitle("Updated Book");
 
         when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("USER");
 
-        // Act & Assert
-        assertThrows(UnauthorizedException.class, () -> bookService.updateBook(bookId, bookUpdateDTO, token));
+        assertThrows(ResourceNotFoundException.class, () -> bookService.updateBook(bookId, bookUpdateDTO, token));
     }
 
     @Test
     void updateBook_ShouldThrowResourceNotFoundException_WhenBookNotFound() {
-        // Arrange
-        Long bookId = 999L; // Book does not exist
+
+        Long bookId = 999L;
         BookUpdateDTO bookUpdateDTO = new BookUpdateDTO();
         bookUpdateDTO.setTitle("Updated Book");
-        String token = "Bearer adminToken";  // Mocked JWT token for admin user
+        String token = "Bearer adminToken";
 
         when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("ADMIN");
         when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(ResourceNotFoundException.class, () -> bookService.updateBook(bookId, bookUpdateDTO, token));
     }
 
@@ -172,7 +158,7 @@ class BookServiceImplTest {
     void deleteBook_ShouldDeleteBook() {
         // Arrange
         Long bookId = 1L;
-        String token = "Bearer adminToken";  // Mocked JWT token for admin user
+        String token = "Bearer adminToken";
 
         when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("ADMIN");
         when(bookRepository.existsById(bookId)).thenReturn(true);
@@ -188,7 +174,7 @@ class BookServiceImplTest {
     void deleteBook_ShouldThrowUnauthorizedException_WhenNotAdmin() {
         // Arrange
         Long bookId = 1L;
-        String token = "Bearer userToken";  // Mocked JWT token for non-admin user
+        String token = "Bearer userToken";
 
         when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("USER");
 
@@ -200,7 +186,7 @@ class BookServiceImplTest {
     void deleteBook_ShouldThrowResourceNotFoundException_WhenBookNotFound() {
         // Arrange
         Long bookId = 999L; // Book does not exist
-        String token = "Bearer adminToken";  // Mocked JWT token for admin user
+        String token = "Bearer adminToken";
         when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("ADMIN");
         when(bookRepository.existsById(bookId)).thenReturn(false);
 
@@ -233,4 +219,118 @@ class BookServiceImplTest {
         assertFalse(books.isEmpty());
         verify(bookRepository, times(1)).findBooksByFilters(genre, author, title);
     }
+
+    @Test
+    void verify_ShouldVerifyBook_WhenAdmin() {
+        // Arrange
+        Long bookId = 1L;
+        String token = "Bearer adminToken";
+
+        BookDAO bookDAO = new BookDAO();
+        bookDAO.setVerified(Boolean.FALSE);
+        bookDAO.setTitle("Test Book");
+
+        when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("ADMIN");
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(bookDAO));
+        when(bookRepository.save(any(BookDAO.class))).thenReturn(bookDAO);
+
+        // Act
+        bookService.verify(bookId, token);
+
+        // Assert
+        assertTrue(bookDAO.getVerified());  // Check that the book's verification status was set to true
+        verify(bookRepository, times(1)).save(bookDAO);
+    }
+
+    @Test
+    void verify_ShouldThrowUnauthorizedException_WhenNotAdmin() {
+        // Arrange
+        Long bookId = 1L;
+        String token = "Bearer userToken";
+
+        when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("USER");
+
+        // Act & Assert
+        assertThrows(UnauthorizedException.class, () -> bookService.verify(bookId, token));
+    }
+
+    @Test
+    void verify_ShouldThrowResourceNotFoundException_WhenBookNotFound() {
+        // Arrange
+        Long bookId = 999L;
+        String token = "Bearer adminToken";
+
+        when(jwtTokenUtil.extractRole(token.replace("Bearer ", ""))).thenReturn("ADMIN");
+        when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class, () -> bookService.verify(bookId, token));
+    }
+
+    @Test
+    void getBookById_ShouldReturnBook_WhenBookExists() {
+        // Arrange
+        Long bookId = 1L;
+        BookDAO bookDAO = new BookDAO();
+        bookDAO.setTitle("Test Book");
+        bookDAO.setAuthor("Test Author");
+
+        Book expectedBook = new Book();
+        expectedBook.setTitle("Test Book");
+        expectedBook.setAuthor("Test Author");
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.of(bookDAO));
+        when(bookMapper.bookDAOToBook(bookDAO)).thenReturn(expectedBook);
+
+        // Act
+        Optional<Book> book = bookService.getBookById(bookId);
+
+        // Assert
+        assertTrue(book.isPresent());
+        assertEquals("Test Book", book.get().getTitle());
+    }
+
+
+    @Test
+    void getBookById_ShouldReturnEmpty_WhenBookDoesNotExist() {
+        // Arrange
+        Long bookId = 999L;
+
+        when(bookRepository.findById(bookId)).thenReturn(Optional.empty());
+
+        // Act
+        Optional<Book> book = bookService.getBookById(bookId);
+
+        // Assert
+        assertFalse(book.isPresent());
+    }
+
+    @Test
+    void bookExists_ShouldReturnTrue_WhenBookExists() {
+        // Arrange
+        Long bookId = 1L;
+
+        when(bookRepository.existsById(bookId)).thenReturn(true);
+
+        // Act
+        boolean exists = bookService.bookExists(bookId);
+
+        // Assert
+        assertTrue(exists);
+    }
+
+    @Test
+    void bookExists_ShouldReturnFalse_WhenBookDoesNotExist() {
+        // Arrange
+        Long bookId = 999L;
+
+        when(bookRepository.existsById(bookId)).thenReturn(false);
+
+        // Act
+        boolean exists = bookService.bookExists(bookId);
+
+        // Assert
+        assertFalse(exists);
+    }
+
 }

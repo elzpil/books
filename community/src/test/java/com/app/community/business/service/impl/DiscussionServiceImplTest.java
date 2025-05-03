@@ -163,4 +163,50 @@ class DiscussionServiceImplTest {
         assertThrows(ResourceNotFoundException.class, () -> discussionService.deleteDiscussion(1L, "Bearer token"));
         verify(discussionRepository, never()).deleteById(anyLong());
     }
+    @Test
+    void testCreateDiscussion_BookDoesNotExist_ShouldThrowException() {
+        discussion.setBookId(99L);
+
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(100L);
+        when(bookServiceClient.doesBookExist(eq(99L), anyString())).thenReturn(false);
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                discussionService.createDiscussion(discussion, "Bearer token")
+        );
+
+        assertEquals("Book with ID 99 does not exist.", exception.getMessage());
+        verify(bookServiceClient, times(1)).doesBookExist(eq(99L), anyString());
+    }
+
+    @Test
+    void testGetDiscussions_NoParams_NonAdmin_ShouldThrowUnauthorized() {
+        when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
+
+        assertThrows(UnauthorizedException.class, () ->
+                discussionService.getDiscussions("Bearer token", null, null, null)
+        );
+    }
+
+    @Test
+    void testGetDiscussions_NoParams_Admin_ShouldReturnAll() {
+        when(jwtTokenUtil.extractRole(anyString())).thenReturn("ADMIN");
+        when(discussionRepository.findAll()).thenReturn(List.of(discussionDAO));
+        when(discussionMapper.discussionDAOToDiscussion(any(DiscussionDAO.class))).thenReturn(discussion);
+
+        List<Discussion> result = discussionService.getDiscussions("Bearer token", null, null, null);
+
+        assertEquals(1, result.size());
+        verify(discussionRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testUpdateDiscussion_DiscussionNotFound_ShouldReturnNull() {
+        when(discussionRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        Discussion result = discussionService.updateDiscussion(1L, new DiscussionUpdateDTO(), "Bearer token");
+
+        assertNull(result);
+        verify(discussionRepository, never()).save(any());
+    }
+
 }

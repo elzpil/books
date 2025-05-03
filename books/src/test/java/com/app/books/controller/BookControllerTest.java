@@ -151,4 +151,61 @@ class BookControllerTest {
         verify(bookService, times(1)).deleteBook(bookId, token);
     }
 
+
+    @Test
+    void checkBookExists_ShouldReturnTrue_WhenBookExists() {
+        // Arrange
+        when(bookService.bookExists(bookId)).thenReturn(true);
+
+        // Act
+        ResponseEntity<Boolean> response = bookController.checkBookExists(bookId);
+
+        // Assert
+        assertEquals(OK, response.getStatusCode());
+        assertTrue(response.getBody());
+        verify(bookService, times(1)).bookExists(bookId);
+    }
+
+    @Test
+    void checkBookExists_ShouldReturnFalse_WhenBookDoesNotExist() {
+        // Arrange
+        when(bookService.bookExists(bookId)).thenReturn(false);
+
+        // Act
+        ResponseEntity<Boolean> response = bookController.checkBookExists(bookId);
+
+        // Assert
+        assertEquals(OK, response.getStatusCode());
+        assertFalse(response.getBody());
+        verify(bookService, times(1)).bookExists(bookId);
+    }
+
+    @Test
+    void verifyBook_ShouldReturnNoContent_WhenBookIsVerified() {
+        // Arrange
+        doNothing().when(bookService).verify(bookId, token);
+
+        // Act
+        ResponseEntity<Void> response = bookController.verifyBook(bookId, token);
+
+        // Assert
+        assertEquals(NO_CONTENT, response.getStatusCode());
+        verify(bookService, times(1)).verify(bookId, token);
+    }
+
+    @Test
+    void verifyBook_ShouldThrowException_WhenBookNotFound() {
+        // Arrange
+        doThrow(new ResourceNotFoundException("Book", bookId)).when(bookService).verify(bookId, token);
+
+        // Act & Assert
+        try {
+            bookController.verifyBook(bookId, token);
+            fail("Expected ResourceNotFoundException to be thrown");
+        } catch (ResourceNotFoundException e) {
+            assertEquals("Book not found with ID: " + bookId, e.getMessage());
+        }
+
+        verify(bookService, times(1)).verify(bookId, token);
+    }
 }
