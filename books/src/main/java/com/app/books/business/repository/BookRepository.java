@@ -17,7 +17,7 @@ public interface BookRepository extends JpaRepository<BookDAO, Long> {
     boolean existsById(Long bookId);
     @Query(value = "SELECT * FROM books b WHERE " +
             "b.is_verified = true AND (" +
-            "(:genre IS NULL OR b.genre = :genre) OR " +
+            "(:genre IS NULL OR LOWER(b.genre) LIKE LOWER(CONCAT('%', :genre, '%'))) OR " +
             "(:author IS NULL OR LOWER(b.author) LIKE LOWER(CONCAT('%', :author, '%'))) OR " +
             "(:title IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :title, '%'))))",
             nativeQuery = true)

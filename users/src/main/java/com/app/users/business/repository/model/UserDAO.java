@@ -22,9 +22,6 @@ public class UserDAO {
     @Column(length = 100, name = "name", columnDefinition = "VARCHAR")
     private String name;
 
-    @Column(name = "avatar_url", columnDefinition = "TEXT")
-    private String avatarUrl;
-
     @Column(columnDefinition = "TEXT")
     private String bio;
 
@@ -57,9 +54,6 @@ public class UserDAO {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
