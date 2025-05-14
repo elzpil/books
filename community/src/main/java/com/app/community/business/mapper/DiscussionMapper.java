@@ -8,6 +8,5 @@ import org.mapstruct.Mapper;
 public interface DiscussionMapper {
 
     Discussion discussionDAOToDiscussion(DiscussionDAO discussionDAO);
-
     DiscussionDAO discussionToDiscussionDAO(Discussion discussion);
 }

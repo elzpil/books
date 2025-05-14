@@ -1,8 +1,6 @@
 package com.app.books.business.repository.model;
 
 import jakarta.persistence.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity

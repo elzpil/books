@@ -67,7 +67,6 @@ public class GroupServiceImpl implements GroupService {
         GroupDAO existingGroup = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", groupId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingGroup.getCreatorId())) {
             log.warn("Unauthorized attempt to delete group ID {} by user ID {}", groupId, existingGroup.getCreatorId());
             throw new UnauthorizedException("You are not authorized to delete this group");
@@ -93,7 +92,6 @@ public class GroupServiceImpl implements GroupService {
         GroupDAO existingGroup = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group", groupId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingGroup.getCreatorId())) {
             log.warn("Unauthorized attempt to delete group ID {} by user ID {}", groupId, existingGroup.getCreatorId());
             throw new UnauthorizedException("You are not authorized to delete this group");

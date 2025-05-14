@@ -12,8 +12,6 @@ public interface ChallengeService {
     Optional<Challenge> getChallengeById(Long challengeId);
     Challenge updateChallenge(Long challengeId, ChallengeUpdateDTO challengeUpdateDTO, String token);
     void deleteChallenge(Long challengeId, String token);
-
     List<Challenge> searchChallenges(String name, String description);
-
     List<Challenge> getChallengesSortedByPopularity();
 }

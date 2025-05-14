@@ -41,7 +41,7 @@ public class UserController {
                                            @RequestHeader("Authorization") String token) {
         log.info("Updating user, token: " + token);
         if (!isAuthorized(token, userId)) {
-            return ResponseEntity.status(403).build();  // Forbidden if not authorized
+            return ResponseEntity.status(403).build();
         }
         Optional<User> user = userService.updateUser(userId, updatedUser);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -51,7 +51,7 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId,
                                            @RequestHeader("Authorization") String token) {
         if (!isAuthorized(token, userId)) {
-            return ResponseEntity.status(403).build();  // Forbidden if not authorized
+            return ResponseEntity.status(403).build();
         }
         boolean deleted = userService.deleteUser(userId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
@@ -116,6 +116,4 @@ public class UserController {
         return user.map(u -> ResponseEntity.ok(u.getEmail()))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-
 }

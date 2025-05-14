@@ -1,0 +1,2 @@
+2025-05-14T06:54:49.991+03:00  WARN 27628 --- [books] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=7h51m29s643ms231µs900ns).
+2025-05-14T09:27:03.974+03:00  WARN 27628 --- [books] [HikariPool-1 housekeeper] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=14m11s501ms374µs100ns).

@@ -1,6 +1,5 @@
 package com.app.community.business.service.impl;
 
-import com.app.community.business.service.impl.BookServiceClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
@@ -41,17 +40,16 @@ class BookServiceClientTest {
         when(webClientBuilder.build()).thenReturn(webClient);
         bookServiceClient = new BookServiceClient(webClientBuilder);
 
-        // Use reflection to set the private field
         Field field = BookServiceClient.class.getDeclaredField("bookExistsUrl");
         field.setAccessible(true);
         field.set(bookServiceClient, bookExistsUrl);
     }
     @Test
     void testDoesBookExist_Success() {
-        // Given
+
         Long bookId = 1L;
         String token = "Bearer valid_token";
-        Boolean exists = true; // Simulating that the book exists
+        Boolean exists = true;
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
@@ -59,20 +57,17 @@ class BookServiceClientTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Boolean.class)).thenReturn(Mono.just(exists));
 
-        // When
         boolean result = bookServiceClient.doesBookExist(bookId, token);
 
-        // Then
         assertTrue(result);
         verify(webClient, times(1)).get();
     }
 
     @Test
     void testDoesBookExist_BookNotFound() {
-        // Given
         Long bookId = 1L;
         String token = "Bearer valid_token";
-        Boolean exists = false; // Simulating that the book does not exist
+        Boolean exists = false;
 
         when(webClient.get()).thenReturn(requestHeadersUriSpec);
         when(requestHeadersUriSpec.uri(anyString())).thenReturn(requestHeadersSpec);
@@ -80,17 +75,14 @@ class BookServiceClientTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Boolean.class)).thenReturn(Mono.just(exists));
 
-        // When
         boolean result = bookServiceClient.doesBookExist(bookId, token);
 
-        // Then
         assertFalse(result);
         verify(webClient, times(1)).get();
     }
 
     @Test
     void testDoesBookExist_WebClientError() {
-        // Given
         Long bookId = 1L;
         String token = "Bearer valid_token";
 
@@ -100,17 +92,13 @@ class BookServiceClientTest {
         when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
         when(responseSpec.bodyToMono(Boolean.class)).thenReturn(Mono.error(new RuntimeException("WebClient error")));
 
-        // When
         boolean result = bookServiceClient.doesBookExist(bookId, token);
-
-        // Then
-        assertFalse(result); // Expecting false because WebClient error occurs
+        assertFalse(result);
         verify(webClient, times(1)).get();
     }
 
     @Test
     void testDoesBookExist_ExceptionThrown() {
-        // Given
         Long bookId = 1L;
         String token = "Bearer valid_token";
 
@@ -119,11 +107,8 @@ class BookServiceClientTest {
         when(requestHeadersSpec.headers(any())).thenReturn(requestHeadersSpec);
         when(requestHeadersSpec.retrieve()).thenThrow(new RuntimeException("Unexpected error"));
 
-        // When
         boolean result = bookServiceClient.doesBookExist(bookId, token);
-
-        // Then
-        assertFalse(result); // Expecting false due to unexpected error
+        assertFalse(result);
         verify(webClient, times(1)).get();
     }
 }

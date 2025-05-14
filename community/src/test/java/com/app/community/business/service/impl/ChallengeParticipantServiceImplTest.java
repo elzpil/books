@@ -47,7 +47,6 @@ class ChallengeParticipantServiceImplTest {
 
     @Test
     void joinChallenge_ShouldAddParticipant_WhenUserIsNotAlreadyJoined() {
-        // Arrange
         Long challengeId = 1L;
         String token = "Bearer validToken";
         Long userId = 2L;
@@ -68,10 +67,8 @@ class ChallengeParticipantServiceImplTest {
         when(participantRepository.save(any(ChallengeParticipantDAO.class))).thenReturn(participantDAO);
         when(participantMapper.challengeParticipantDAOToChallengeParticipant(any())).thenReturn(participant);
 
-        // Act
         ChallengeParticipant result = participantService.joinChallenge(challengeId, token);
 
-        // Assert
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
         assertEquals(challengeId, result.getChallengeId());
@@ -80,7 +77,6 @@ class ChallengeParticipantServiceImplTest {
 
     @Test
     void joinChallenge_ShouldThrowException_WhenUserAlreadyJoined() {
-        // Arrange
         Long challengeId = 1L;
         String token = "Bearer validToken";
         Long userId = 2L;
@@ -91,14 +87,11 @@ class ChallengeParticipantServiceImplTest {
 
         when(jwtTokenUtil.extractUserId(anyString())).thenReturn(userId);
         when(participantRepository.findByUserIdAndChallengeId(anyLong(), anyLong())).thenReturn(List.of(participantDAO));
-
-        // Act & Assert
         assertThrows(IllegalStateException.class, () -> participantService.joinChallenge(challengeId, token));
     }
 
     @Test
     void getParticipants_ShouldReturnListOfParticipants() {
-        // Arrange
         Long challengeId = 1L;
         ChallengeParticipantDAO participantDAO = new ChallengeParticipantDAO();
         participantDAO.setChallengeId(challengeId);
@@ -109,10 +102,8 @@ class ChallengeParticipantServiceImplTest {
         when(participantRepository.findByChallengeId(anyLong())).thenReturn(List.of(participantDAO));
         when(participantMapper.challengeParticipantDAOToChallengeParticipant(any())).thenReturn(participant);
 
-        // Act
         List<ChallengeParticipant> result = participantService.getParticipants(challengeId);
 
-        // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
         assertEquals(challengeId, result.get(0).getChallengeId());
@@ -120,7 +111,6 @@ class ChallengeParticipantServiceImplTest {
 
     @Test
     void updateProgress_ShouldUpdateProgress_WhenUserIsAuthorized() {
-        // Arrange
         Long challengeId = 1L;
         String token = "Bearer validToken";
         Long userId = 2L;
@@ -144,17 +134,14 @@ class ChallengeParticipantServiceImplTest {
         when(participantRepository.save(any(ChallengeParticipantDAO.class))).thenReturn(participantDAO);
         when(participantMapper.challengeParticipantDAOToChallengeParticipant(any())).thenReturn(updatedParticipant);
 
-        // Act
         ChallengeParticipant result = participantService.updateProgress(challengeId, updateDTO, token);
 
-        // Assert
         assertNotNull(result);
         assertEquals(80, result.getProgress());
     }
 
     @Test
     void updateProgress_ShouldThrowException_WhenUserNotAuthorized() {
-        // Arrange
         Long challengeId = 1L;
         String token = "Bearer validToken";
         Long userId = 2L;
@@ -163,19 +150,17 @@ class ChallengeParticipantServiceImplTest {
         updateDTO.setProgress(80);
 
         ChallengeParticipantDAO participantDAO = new ChallengeParticipantDAO();
-        participantDAO.setUserId(3L);  // Different user ID
+        participantDAO.setUserId(3L);
         participantDAO.setChallengeId(challengeId);
 
         when(jwtTokenUtil.extractUserId(anyString())).thenReturn(userId);
         when(participantRepository.findByUserIdAndChallengeId(anyLong(), anyLong())).thenReturn(List.of(participantDAO));
 
-        // Act & Assert
         assertThrows(UnauthorizedException.class, () -> participantService.updateProgress(challengeId, updateDTO, token));
     }
 
     @Test
     void leaveChallenge_ShouldRemoveParticipant_WhenUserIsAuthorized() {
-        // Arrange
         Long challengeId = 1L;
         String token = "Bearer validToken";
         Long userId = 2L;
@@ -188,28 +173,22 @@ class ChallengeParticipantServiceImplTest {
         when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
         when(participantRepository.findByUserIdAndChallengeId(anyLong(), anyLong())).thenReturn(List.of(participantDAO));
 
-        // Act
         participantService.leaveChallenge(challengeId, token);
-
-        // Assert
         verify(participantRepository, times(1)).delete(any(ChallengeParticipantDAO.class));
     }
 
     @Test
     void leaveChallenge_ShouldThrowException_WhenUserIsNotAuthorized() {
-        // Arrange
         Long challengeId = 1L;
         String token = "Bearer validToken";
         Long userId = 2L;
 
         ChallengeParticipantDAO participantDAO = new ChallengeParticipantDAO();
-        participantDAO.setUserId(3L);  // Different user ID
+        participantDAO.setUserId(3L);
         participantDAO.setChallengeId(challengeId);
 
         when(jwtTokenUtil.extractUserId(anyString())).thenReturn(userId);
         when(participantRepository.findByUserIdAndChallengeId(anyLong(), anyLong())).thenReturn(List.of(participantDAO));
-
-        // Act & Assert
         assertThrows(UnauthorizedException.class, () -> participantService.leaveChallenge(challengeId, token));
     }
 }

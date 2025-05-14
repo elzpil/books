@@ -64,7 +64,6 @@ public class DiscussionServiceImpl implements DiscussionService {
         String cleanToken = token.replace("Bearer ", "");
         String userRole = jwtTokenUtil.extractRole(cleanToken);
 
-        // If all parameters are null, only allow access for admins
         if (groupId == null && bookId == null && challengeId == null) {
             if (!"ADMIN".equals(userRole)) {
                 log.warn("Unauthorized attempt to get all discussions by non-admin user");
@@ -124,7 +123,6 @@ public class DiscussionServiceImpl implements DiscussionService {
         DiscussionDAO existingDiscussion= discussionRepository.findById(discussionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Discussion", discussionId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingDiscussion.getUserId())) {
             log.warn("Unauthorized attempt to delete discussion ID {} by user ID {}", discussionId, existingDiscussion.getUserId());
             throw new UnauthorizedException("You are not authorized to delete this discussion");

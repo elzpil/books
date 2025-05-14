@@ -26,16 +26,16 @@ public class BookServiceClient {
 
             Boolean exists = webClient.get()
                     .uri(url)
-                    .headers(headers -> headers.setBearerAuth(token.replace("Bearer ", ""))) // Add token if required
+                    .headers(headers -> headers.setBearerAuth(token.replace("Bearer ", "")))
                     .retrieve()
-                    .bodyToMono(Boolean.class) // Expect a boolean response
+                    .bodyToMono(Boolean.class)
                     .doOnNext(response -> log.info("Received response: {}", response))
                     .doOnError(error -> log.error("Error in WebClient call: {}", error.getMessage()))
                     .onErrorResume(error -> {
                         log.error("Book check failed for ID {}: {}", bookId, error.getMessage());
-                        return Mono.just(false); // Return false only if the request actually fails
+                        return Mono.just(false);
                     })
-                    .block(); // Blocking call for synchronous behavior
+                    .block();
 
             log.info("Book existence check result for ID {}: {}", bookId, exists);
             return Boolean.TRUE.equals(exists);

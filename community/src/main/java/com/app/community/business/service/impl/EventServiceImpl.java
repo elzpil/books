@@ -4,12 +4,10 @@ import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.EventMapper;
 import com.app.community.business.repository.EventRepository;
 import com.app.community.business.repository.model.EventDAO;
-import com.app.community.business.repository.model.EventDAO;
 import com.app.community.business.service.EventService;
 import com.app.community.dto.EventUpdateDTO;
 import com.app.community.exception.ResourceNotFoundException;
 import com.app.community.exception.UnauthorizedException;
-import com.app.community.model.Event;
 import com.app.community.model.Event;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -75,7 +73,6 @@ public class EventServiceImpl implements EventService {
         EventDAO existingEvent= eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingEvent.getUserId())) {
             log.warn("Unauthorized attempt to delete event ID {} by user ID {}", eventId, existingEvent.getUserId());
             throw new UnauthorizedException("You are not authorized to delete this event");
@@ -101,7 +98,6 @@ public class EventServiceImpl implements EventService {
         EventDAO existingEvent= eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingEvent.getUserId())) {
             log.warn("Unauthorized attempt to delete event ID {} by user ID {}", eventId, existingEvent.getUserId());
             throw new UnauthorizedException("You are not authorized to delete this event");

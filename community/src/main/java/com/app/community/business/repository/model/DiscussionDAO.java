@@ -33,7 +33,6 @@ public class DiscussionDAO {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Getters and Setters
     public Long getDiscussionId() { return discussionId; }
     public void setDiscussionId(Long discussionId) { this.discussionId = discussionId; }
 

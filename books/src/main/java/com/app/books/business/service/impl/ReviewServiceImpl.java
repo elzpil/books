@@ -78,7 +78,6 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewDAO existingReview = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingReview.getUserId())) {
             log.warn("Unauthorized attempt to update review ID {} by user ID {}", reviewId, existingReview.getUserId());
             throw new UnauthorizedException("You are not authorized to update this review");
@@ -109,7 +108,6 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewDAO existingReview = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResourceNotFoundException("Review", reviewId));
 
-        // Check if the user is authorized
         if (!isAuthorized(token, existingReview.getUserId())) {
             log.warn("Unauthorized attempt to delete review ID {} by user ID {}", reviewId, existingReview.getUserId());
             throw new UnauthorizedException("You are not authorized to delete this review");

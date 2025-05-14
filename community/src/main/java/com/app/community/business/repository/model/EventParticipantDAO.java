@@ -25,7 +25,6 @@ public class EventParticipantDAO {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    // Getters and Setters
     public Long getParticipantId() { return participantId; }
     public void setParticipantId(Long participantId) { this.participantId = participantId; }
 

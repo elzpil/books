@@ -1,7 +1,6 @@
 package com.app.community.dto;
 
 import com.app.community.model.PrivacySetting;
-import jakarta.validation.constraints.NotBlank;
 
 public class GroupUpdateDTO {
 

@@ -1,6 +1,5 @@
 package com.app.community.model;
 
-import com.app.community.model.PrivacySetting;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 

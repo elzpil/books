@@ -4,9 +4,7 @@ import com.app.community.auth.util.JwtTokenUtil;
 import com.app.community.business.mapper.ChallengeMapper;
 import com.app.community.business.repository.ChallengeRepository;
 import com.app.community.business.repository.model.ChallengeDAO;
-import com.app.community.business.service.ChallengeService;
 import com.app.community.dto.ChallengeUpdateDTO;
-import com.app.community.exception.ResourceNotFoundException;
 import com.app.community.exception.UnauthorizedException;
 import com.app.community.model.Challenge;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -122,21 +119,18 @@ class ChallengeServiceImplTest {
         when(jwtTokenUtil.extractUserId(anyString())).thenReturn(userId);
         when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
 
-        // Simulate updated ChallengeDAO
         ChallengeDAO updatedChallengeDAO = new ChallengeDAO();
         updatedChallengeDAO.setId(challengeId);
-        updatedChallengeDAO.setName(updateDTO.getName()); // Updated name
+        updatedChallengeDAO.setName(updateDTO.getName());
         updatedChallengeDAO.setDescription(challengeDAO.getDescription());
         updatedChallengeDAO.setCreatorId(challengeDAO.getCreatorId());
         updatedChallengeDAO.setStartDate(challengeDAO.getStartDate());
         updatedChallengeDAO.setEndDate(challengeDAO.getEndDate());
 
         when(challengeRepository.save(any(ChallengeDAO.class))).thenReturn(updatedChallengeDAO);
-
-        // Simulate mapping of updated DAO to Challenge model
         Challenge updatedChallenge = new Challenge();
         updatedChallenge.setId(challengeId);
-        updatedChallenge.setName(updateDTO.getName()); // Updated name
+        updatedChallenge.setName(updateDTO.getName());
         updatedChallenge.setDescription(challenge.getDescription());
         updatedChallenge.setCreatorId(challenge.getCreatorId());
         updatedChallenge.setStartDate(challenge.getStartDate());
@@ -147,7 +141,7 @@ class ChallengeServiceImplTest {
         Challenge result = challengeService.updateChallenge(challengeId, updateDTO, token);
 
         assertThat(result).isNotNull();
-        assertThat(result.getName()).isEqualTo("Updated Challenge"); // Check if the name was updated
+        assertThat(result.getName()).isEqualTo("Updated Challenge");
         verify(challengeRepository, times(1)).save(any(ChallengeDAO.class));
     }
 
@@ -158,7 +152,7 @@ class ChallengeServiceImplTest {
         updateDTO.setName("Updated Challenge");
 
         when(challengeRepository.findById(challengeId)).thenReturn(Optional.of(challengeDAO));
-        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(99L); // Unauthorized user
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(99L);
         when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
 
         assertThatThrownBy(() -> challengeService.updateChallenge(challengeId, updateDTO, token))
@@ -180,7 +174,7 @@ class ChallengeServiceImplTest {
     @Test
     void deleteChallenge_ShouldThrowUnauthorizedException_WhenUnauthorized() {
         when(challengeRepository.findById(challengeId)).thenReturn(Optional.of(challengeDAO));
-        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(99L); // Unauthorized user
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(99L);
         when(jwtTokenUtil.extractRole(anyString())).thenReturn("USER");
 
         assertThatThrownBy(() -> challengeService.deleteChallenge(challengeId, token))

@@ -1,10 +1,8 @@
 package com.app.community.controller;
 
 import com.app.community.business.service.GroupMembershipService;
-import com.app.community.dto.EventUpdateDTO;
 import com.app.community.dto.GroupMembershipAddDTO;
 import com.app.community.dto.GroupMembershipUpdateDTO;
-import com.app.community.model.Event;
 import com.app.community.model.Group;
 import com.app.community.model.GroupMembership;
 import jakarta.validation.Valid;
@@ -91,6 +89,4 @@ public class GroupMembershipController {
         log.info("Admin added user ID {} to group ID {} as {}", dto.getUserId(), groupId, dto.getRole());
         return ResponseEntity.ok(addedMembership);
     }
-
-
 }

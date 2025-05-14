@@ -1,6 +1,5 @@
 package com.app.community.business.service;
 
-import com.app.community.business.repository.model.DiscussionDAO;
 import com.app.community.dto.DiscussionUpdateDTO;
 import com.app.community.model.Discussion;
 

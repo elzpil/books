@@ -159,8 +159,8 @@ public class BookServiceImpl implements BookService {
 
         existingBook.setVerified(Boolean.TRUE);
         bookRepository.save(existingBook);
-
         String userEmail = userServiceClient.getUserEmail(existingBook.getUserId());
+        log.info("userEmail {}.", userEmail);
         if (userEmail != null) {
             emailService.sendSimpleMessage(
                     userEmail,

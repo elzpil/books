@@ -43,7 +43,6 @@ class BookshelfServiceImplTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        // Initialize mock objects using setters
         userId = 1L;
         token = "Bearer validToken";
         bookshelfEntry = new BookshelfEntry();
@@ -59,7 +58,6 @@ class BookshelfServiceImplTest {
         bookshelfDAO.setStatus("Reading");
         bookshelfDAO.setCreatedAt(LocalDateTime.now());
 
-        // Set up the bookshelf service with constructor
         bookshelfService = new BookshelfServiceImpl(bookshelfRepository, bookshelfMapper, jwtTokenUtil);
     }
 
@@ -67,11 +65,9 @@ class BookshelfServiceImplTest {
 
     @Test
     void addToBookshelf_AlreadyExist_ShouldThrowIllegalStateException() {
-        // Arrange
         when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(userId);
         when(bookshelfRepository.findByUserIdAndBookId(userId, bookshelfEntry.getBookId())).thenReturn(Optional.of(bookshelfDAO));
 
-        // Act & Assert
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             bookshelfService.addToBookshelf(bookshelfEntry, token);
         });
@@ -80,14 +76,11 @@ class BookshelfServiceImplTest {
 
     @Test
     void getUserBookshelf_Success() {
-        // Arrange
         when(bookshelfRepository.findByUserId(userId)).thenReturn(List.of(bookshelfDAO));
         when(bookshelfMapper.bookshelfDAOToBookshelfEntry(bookshelfDAO)).thenReturn(bookshelfEntry);
 
-        // Act
         List<BookshelfEntry> result = bookshelfService.getUserBookshelf(userId);
 
-        // Assert
         assertNotNull(result);
         assertFalse(result.isEmpty());
         assertEquals(userId, result.get(0).getUserId());
@@ -95,12 +88,10 @@ class BookshelfServiceImplTest {
 
     @Test
     void updateReadingStatus_ResourceNotFoundException() {
-        // Arrange
         BookshelfUpdateDTO bookshelfUpdateDTO = new BookshelfUpdateDTO();
         bookshelfDAO.setStatus("Read");
         when(bookshelfRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
             bookshelfService.updateReadingStatus(1L, bookshelfUpdateDTO, token);
         });
@@ -109,13 +100,11 @@ class BookshelfServiceImplTest {
 
     @Test
     void updateReadingStatus_UnauthorizedException() {
-        // Arrange
         BookshelfUpdateDTO bookshelfUpdateDTO = new BookshelfUpdateDTO();
         bookshelfDAO.setStatus("Read");
         when(bookshelfRepository.findById(1L)).thenReturn(Optional.of(bookshelfDAO));
-        when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(2L); // Unauthorized user
+        when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(2L);
 
-        // Act & Assert
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
             bookshelfService.updateReadingStatus(1L, bookshelfUpdateDTO, token);
         });
@@ -124,23 +113,18 @@ class BookshelfServiceImplTest {
 
     @Test
     void removeFromBookshelf_Success() {
-        // Arrange
         when(bookshelfRepository.findById(1L)).thenReturn(Optional.of(bookshelfDAO));
         when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(userId);
 
-        // Act
         bookshelfService.removeFromBookshelf(1L, token);
 
-        // Assert
         verify(bookshelfRepository, times(1)).deleteById(1L);
     }
 
     @Test
     void removeFromBookshelf_ResourceNotFoundException() {
-        // Arrange
         when(bookshelfRepository.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
             bookshelfService.removeFromBookshelf(1L, token);
         });
@@ -149,11 +133,9 @@ class BookshelfServiceImplTest {
 
     @Test
     void removeFromBookshelf_UnauthorizedException() {
-        // Arrange
         when(bookshelfRepository.findById(1L)).thenReturn(Optional.of(bookshelfDAO));
-        when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(2L); // Unauthorized user
+        when(jwtTokenUtil.extractUserId(token.replace("Bearer ", ""))).thenReturn(2L);
 
-        // Act & Assert
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> {
             bookshelfService.removeFromBookshelf(1L, token);
         });

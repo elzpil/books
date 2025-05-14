@@ -6,9 +6,7 @@ import com.app.books.business.repository.ReadingProgressRepository;
 import com.app.books.business.repository.model.ReadingProgressDAO;
 import com.app.books.business.service.ReadingProgressService;
 import com.app.books.dto.ReadingProgressUpdateDTO;
-import com.app.books.exception.UnauthorizedException;
 import com.app.books.model.ReadingProgress;
-import com.app.books.business.service.impl.UserServiceClient;  // Import UserServiceClient
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -73,8 +71,6 @@ public class ReadingProgressServiceImpl implements ReadingProgressService {
         ReadingProgressDAO savedProgress = repository.save(existingProgress);
 
         log.info("Successfully updated progress ID {} to {}%", progressId, percentageRead);
-
-        // Return the updated progress as a DTO
         return mapper.daoToProgress(savedProgress);
     }
 

@@ -97,7 +97,7 @@ class UserControllerTest {
 
     @Test
     void updateUser_Unauthorized_ShouldReturnForbidden() {
-        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L); // Different user
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L);
 
         ResponseEntity<User> response = userController.updateUser(userId, user, token);
 
@@ -119,7 +119,7 @@ class UserControllerTest {
 
     @Test
     void deleteUser_Unauthorized_ShouldReturnForbidden() {
-        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L); // Different user
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L);
 
         ResponseEntity<Void> response = userController.deleteUser(userId, token);
 
@@ -221,7 +221,7 @@ class UserControllerTest {
 
     @Test
     void changePassword_Unauthorized_ShouldReturnForbidden() {
-        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L); // Not matching userId
+        when(jwtTokenUtil.extractUserId(anyString())).thenReturn(2L);
 
         ChangePasswordRequest request = new ChangePasswordRequest();
         request.setOldPassword("oldPass");

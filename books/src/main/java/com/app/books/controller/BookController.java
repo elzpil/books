@@ -1,6 +1,5 @@
 package com.app.books.controller;
 
-import com.app.books.auth.util.JwtTokenUtil;
 import com.app.books.business.service.BookService;
 import com.app.books.dto.BookUpdateDTO;
 import com.app.books.exception.ResourceNotFoundException;
@@ -14,8 +13,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import org.springframework.security.access.prepost.PreAuthorize;
-
 @Slf4j
 @RestController
 @RequestMapping("/books")
@@ -26,7 +23,6 @@ public class BookController {
         this.bookService = bookService;
     }
 
-
     @PostMapping
     public ResponseEntity<Book> addBook(@Valid @RequestBody Book book,
                                         @RequestHeader("Authorization") String token) {
@@ -34,7 +30,6 @@ public class BookController {
         Book savedBook = bookService.saveBook(book, token);
         return ResponseEntity.ok(savedBook);
     }
-
 
     @GetMapping
     public ResponseEntity<List<Book>> getBooks(@RequestParam(required = false) String genre,
@@ -61,7 +56,6 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
 
-
     @PutMapping("/{bookId}")
     public ResponseEntity<Book> updateBook(@PathVariable Long bookId, @Valid @RequestBody BookUpdateDTO bookUpdateDTO,
                                            @RequestHeader("Authorization") String token) {
@@ -69,7 +63,6 @@ public class BookController {
         Book updatedBook = bookService.updateBook(bookId, bookUpdateDTO, token);
         return ResponseEntity.ok(updatedBook);
     }
-
 
     @DeleteMapping("/{bookId}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long bookId,

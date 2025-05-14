@@ -7,7 +7,6 @@ import com.app.users.business.service.UserService;
 import com.app.users.exception.ResourceNotFoundException;
 import com.app.users.model.User;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,7 +128,7 @@ public class UserServiceImpl implements UserService {
     public User findByUsername(String username) {
         Optional<UserDAO> userDAO = Optional.ofNullable(userRepository.findByUsername(username));
         return userDAO.map(u -> new User(u.getEmail(), u.getPassword()))
-                .orElseThrow(() -> new ResourceNotFoundException("Username", 0L)); //TODO fix this
+                .orElseThrow(() -> new ResourceNotFoundException("Username", 0L));
     }
 
     @Override
@@ -168,12 +167,9 @@ public class UserServiceImpl implements UserService {
 
         UserDAO user = userOpt.get();
 
-        // Check old password
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             return false;
         }
-
-        // Encode and set new password
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         return true;
@@ -183,7 +179,6 @@ public class UserServiceImpl implements UserService {
     public List<User> searchUsers(String name, String username, String email) {
         log.info("Searching users with name: {}, username: {}, email: {}", name, username, email);
 
-        // Perform search query with possible filters for name, username, and email
         List<UserDAO> userDAOs = userRepository.searchUsers(name, username, email);
         return userDAOs.stream()
                 .map(userMapper::userDAOToUser)

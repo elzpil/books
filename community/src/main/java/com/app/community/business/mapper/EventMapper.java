@@ -8,6 +8,5 @@ import org.mapstruct.Mapper;
 public interface EventMapper {
 
     Event eventDAOToEvent(EventDAO eventDAO);
-
     EventDAO eventToEventDAO(Event event);
 }

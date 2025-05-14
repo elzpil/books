@@ -86,20 +86,16 @@ class BookControllerTest {
 
     @Test
     void getBookById_BookNotFound_ShouldReturnNotFound() {
-        // Mock the service to return an empty Optional for book ID 1
+
         when(bookService.getBookById(1L)).thenReturn(Optional.empty());
 
-        // Call the controller method, which should throw a ResourceNotFoundException
         try {
             ResponseEntity<Book> response = bookController.getBookById(1L);
-            // If it doesn't throw an exception, fail the test
             fail("Expected ResourceNotFoundException to be thrown");
         } catch (ResourceNotFoundException e) {
-            // Assert that the exception message is as expected
             assertEquals("Book not found with ID: 1", e.getMessage());
         }
 
-        // Verify that the service method was called once
         verify(bookService, times(1)).getBookById(1L);
     }
 
@@ -134,33 +130,26 @@ class BookControllerTest {
 
     @Test
     void deleteBook_BookNotFound_ShouldReturnNotFound() {
-        // Mock the service to throw ResourceNotFoundException when attempting to delete a book
+
         doThrow(new ResourceNotFoundException("Book", bookId)).when(bookService).deleteBook(bookId, token);
 
-        // Call the controller method and expect it to throw ResourceNotFoundException
         try {
             ResponseEntity<Void> response = bookController.deleteBook(bookId, token);
-            // If it doesn't throw an exception, fail the test
             fail("Expected ResourceNotFoundException to be thrown");
         } catch (ResourceNotFoundException e) {
-            // Assert that the exception message is as expected
             assertEquals("Book not found with ID: " + bookId, e.getMessage());
         }
 
-        // Verify that the service method was called once
         verify(bookService, times(1)).deleteBook(bookId, token);
     }
 
 
     @Test
     void checkBookExists_ShouldReturnTrue_WhenBookExists() {
-        // Arrange
         when(bookService.bookExists(bookId)).thenReturn(true);
 
-        // Act
         ResponseEntity<Boolean> response = bookController.checkBookExists(bookId);
 
-        // Assert
         assertEquals(OK, response.getStatusCode());
         assertTrue(response.getBody());
         verify(bookService, times(1)).bookExists(bookId);
@@ -168,13 +157,10 @@ class BookControllerTest {
 
     @Test
     void checkBookExists_ShouldReturnFalse_WhenBookDoesNotExist() {
-        // Arrange
         when(bookService.bookExists(bookId)).thenReturn(false);
 
-        // Act
         ResponseEntity<Boolean> response = bookController.checkBookExists(bookId);
 
-        // Assert
         assertEquals(OK, response.getStatusCode());
         assertFalse(response.getBody());
         verify(bookService, times(1)).bookExists(bookId);
@@ -182,23 +168,19 @@ class BookControllerTest {
 
     @Test
     void verifyBook_ShouldReturnNoContent_WhenBookIsVerified() {
-        // Arrange
         doNothing().when(bookService).verify(bookId, token);
 
-        // Act
         ResponseEntity<Void> response = bookController.verifyBook(bookId, token);
 
-        // Assert
         assertEquals(NO_CONTENT, response.getStatusCode());
         verify(bookService, times(1)).verify(bookId, token);
     }
 
     @Test
     void verifyBook_ShouldThrowException_WhenBookNotFound() {
-        // Arrange
+
         doThrow(new ResourceNotFoundException("Book", bookId)).when(bookService).verify(bookId, token);
 
-        // Act & Assert
         try {
             bookController.verifyBook(bookId, token);
             fail("Expected ResourceNotFoundException to be thrown");

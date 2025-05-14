@@ -5,20 +5,16 @@ import com.app.community.business.mapper.GroupMembershipMapper;
 import com.app.community.business.mapper.GroupMapper;
 import com.app.community.business.repository.GroupMembershipRepository;
 import com.app.community.business.repository.GroupRepository;
-import com.app.community.business.repository.model.EventDAO;
 import com.app.community.business.repository.model.GroupDAO;
 import com.app.community.business.repository.model.GroupMembershipDAO;
 import com.app.community.business.service.GroupMembershipService;
-import com.app.community.dto.EventUpdateDTO;
 import com.app.community.dto.GroupMembershipAddDTO;
 import com.app.community.dto.GroupMembershipUpdateDTO;
 import com.app.community.exception.ResourceNotFoundException;
 import com.app.community.exception.UnauthorizedException;
-import com.app.community.model.Event;
 import com.app.community.model.Group;
 import com.app.community.model.GroupMembership;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,7 +78,6 @@ public class GroupMembershipServiceImpl implements GroupMembershipService {
             throw new UnauthorizedException("You are not authorized to leave this group");
         }
 
-        // Delete membership
         log.info("Deleting membership for user ID {} in group ID {}", userId, groupId);
         groupMembershipRepository.deleteByGroupIdAndUserId(groupId, userId);
     }

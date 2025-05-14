@@ -12,6 +12,7 @@ public class EmailServiceImpl {
 
     public void sendSimpleMessage(String to, String subject, String text) {
         SimpleMailMessage message = new SimpleMailMessage();
+        System.out.println("Sending email to: " + to +".");
         message.setTo(to);
         message.setSubject(subject);
         message.setText(text);

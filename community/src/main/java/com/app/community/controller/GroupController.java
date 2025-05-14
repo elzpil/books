@@ -68,6 +68,4 @@ public class GroupController {
         List<Group> groups = groupService.searchPublicGroups(query);
         return ResponseEntity.ok(groups);
     }
-
-
 }

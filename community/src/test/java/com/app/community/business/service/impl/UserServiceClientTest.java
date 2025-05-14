@@ -29,8 +29,6 @@ class UserServiceClientTest {
     void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
         userServiceClient = new UserServiceClient(restTemplate);
-
-        // 👇 Use reflection to set the private field "userExistsUrl"
         Field field = UserServiceClient.class.getDeclaredField("userExistsUrl");
         field.setAccessible(true);
         field.set(userServiceClient, baseUrl);

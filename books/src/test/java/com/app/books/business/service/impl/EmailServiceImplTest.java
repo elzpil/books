@@ -21,30 +21,24 @@ class EmailServiceImplTest {
     void setUp() throws NoSuchFieldException, IllegalAccessException {
         MockitoAnnotations.openMocks(this);
         emailService = new EmailServiceImpl();
-
-        // Using reflection to set the private mailSender field
         Field field = EmailServiceImpl.class.getDeclaredField("mailSender");
-        field.setAccessible(true);  // Make the field accessible
-        field.set(emailService, mailSender);  // Inject mock into the private field
+        field.setAccessible(true);
+        field.set(emailService, mailSender);
     }
 
     @Test
     void sendSimpleMessage_ShouldSendEmail() {
-        // Arrange
         String to = "test@example.com";
         String subject = "Test Subject";
         String text = "Test message content";
 
-        // Act
         emailService.sendSimpleMessage(to, subject, text);
 
-        // Assert
         SimpleMailMessage expectedMessage = new SimpleMailMessage();
         expectedMessage.setTo(to);
         expectedMessage.setSubject(subject);
         expectedMessage.setText(text);
 
-        // Verify that JavaMailSender's send method was called with the expected message
         verify(mailSender, times(1)).send(expectedMessage);
     }
 }

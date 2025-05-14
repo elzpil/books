@@ -13,10 +13,8 @@ public interface UserRepository extends JpaRepository<UserDAO, Long> {
     UserDAO findByUsername(String username);
     @Query("SELECT u FROM UserDAO u WHERE u.email = :email")
     UserDAO findByEmail(String email);
-
     boolean existsByUsername(String username);
     boolean existsById(Long userId);
-
     @Query(value = "SELECT * FROM users u WHERE " +
             "(:name IS NULL OR LOWER(u.name) LIKE LOWER(CONCAT('%', :name, '%'))) " +
             "OR (:username IS NULL OR LOWER(u.username) LIKE LOWER(CONCAT('%', :username, '%'))) " +
@@ -25,7 +23,6 @@ public interface UserRepository extends JpaRepository<UserDAO, Long> {
     List<UserDAO> searchUsers(@Param("name") String name,
                               @Param("username") String username,
                               @Param("email") String email);
-
 
 
 }

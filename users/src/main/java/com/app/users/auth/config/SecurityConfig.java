@@ -45,7 +45,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF for simplicity
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/users/create").permitAll()
@@ -53,7 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/users/{userId}").permitAll()
                         .requestMatchers("/users/{userId}/email").permitAll()
                         .requestMatchers("/users/{userId}/role").hasRole("ADMIN")
-                        .anyRequest().authenticated()  // Secure all other endpoints
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil), UsernamePasswordAuthenticationFilter.class)
                 .logout(logout -> logout

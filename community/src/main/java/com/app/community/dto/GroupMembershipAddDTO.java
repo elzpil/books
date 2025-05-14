@@ -2,7 +2,6 @@
 package com.app.community.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
 
 public class GroupMembershipAddDTO {
@@ -10,7 +9,7 @@ public class GroupMembershipAddDTO {
     private Long userId;
 
     @NotNull
-    private String role; // e.g., "member" or "moderator"
+    private String role; // e.g., "member" or "admin"
 
     public Long getUserId() {
         return userId;

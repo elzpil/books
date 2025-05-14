@@ -6,7 +6,6 @@ public class ChallengeParticipantUpdateDTO {
     public Integer getProgress() {
         return progress;
     }
-
     public void setProgress(Integer progress) {
         this.progress = progress;
     }

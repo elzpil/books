@@ -11,17 +11,11 @@ public interface UserService {
     boolean deleteUser(Long userId);
     List<User> getAllUsers();
     Optional<User> updateUserRole(Long userId, String roleName);
-
-    //User findByUsername(String username);
     Optional<User> findByEmail(String email);
     boolean existsByUsername(String username);
     boolean userExists(Long userId);
-
     boolean changePassword(Long userId, String oldPassword, String newPassword);
-
     List<User> searchUsers(String name, String username, String email);
     boolean existsByEmail(String email);
     User findByUsername(String username);
-
-
 }

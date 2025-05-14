@@ -11,8 +11,6 @@ import java.util.Optional;
 public interface FollowerRepository extends JpaRepository<FollowerDAO, Long> {
 
     List<FollowerDAO> findByUserId(Long userId);
-
     List<FollowerDAO> findByFollowingUserId(Long followingUserId);
-
     Optional<FollowerDAO> findByUserIdAndFollowingUserId(Long userId, Long followingUserId);
 }
